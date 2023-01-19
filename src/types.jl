@@ -62,7 +62,7 @@ For portfolio optimization
     mQP(V, q)   for no short-sale: A = ones(1,N), b = [1],  C = -I, g = zeros(N)
     mQP(V, q, u)    for bounds 0<= x <= u, and thus A = ones(1,N), b = [1],  C = [-I; I], g = [zeros(N); u]
 
-See [`Documentation for OOQP.jl`](https://github.com/PharosAbad/OOQP.jl/wiki)
+See [`Documentation for EasyQP.jl`](https://github.com/PharosAbad/EasyQP.jl/wiki)
 
 See also [`mpcQP`](@ref)
 """

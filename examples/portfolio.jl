@@ -4,7 +4,7 @@
 	s.t.   z′1=1 ,  0≤z≤u
 =#
 
-using OOQP
+using EasyQP
 
 V = [1/100 1/80 1/100
      1/80 1/16 1/40

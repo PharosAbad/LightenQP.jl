@@ -1,21 +1,21 @@
-___OOQP.jl___
+___EasyQP.jl___
 
 
-[![Build Status](https://github.com/PharosAbad/OOQP.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/PharosAbad/OOQP.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/PharosAbad/OOQP.jl/wiki)
+[![Build Status](https://github.com/PharosAbad/EasyQP.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/PharosAbad/EasyQP.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/PharosAbad/EasyQP.jl/wiki)
 
 <h1 align="center" margin=0px>
-  A pure Julia implementation of OOQP
+  A pure Julia implementation of EasyQP
 </h1>
 
 <p align="center">
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
   <a href="#license-">License</a> •
-  <a href="https://github.com/PharosAbad/OOQP.jl/wiki">Documentation</a>
+  <a href="https://github.com/PharosAbad/EasyQP.jl/wiki">Documentation</a>
 </p>
 
-**OOQP.jl** solves the following convex quadratic programming (QP) problems:
+**EasyQP.jl** solves the following convex quadratic programming (QP) problems:
 
 $$
 \begin{array}
@@ -31,18 +31,18 @@ with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N
 
 ## Features
 
-* __Light weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [OOQP](https://github.com/emgertz/OOQP)
+* __Light weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [EasyQP](https://github.com/emgertz/EasyQP)
 * __Fast__: beat [Clarabel](https://github.com/oxfordcontrol/Clarabel.jl) for efficient portfolio seeking
-* __Open Source__: Our code is available on [GitHub](https://github.com/PharosAbad/OOQP.jl) and distributed under the MIT License
+* __Open Source__: Our code is available on [GitHub](https://github.com/PharosAbad/EasyQP.jl) and distributed under the MIT License
 * __Arbitrary Precision Arithmetic__: fully support for `BigFloat`
 
 
 ## Installation
-__OOQP.jl__ can be added by
+__EasyQP.jl__ can be added by
 
-- `import Pkg; Pkg.add("OOQP")`
-- `pkg> add OOQP`
-- `pkg> dev OOQP` for test nightly version. To use the registered version again `pkg> free OOQP`
+- `import Pkg; Pkg.add("EasyQP")`
+- `pkg> add EasyQP`
+- `pkg> dev EasyQP` for test nightly version. To use the registered version again `pkg> free EasyQP`
 
 ## License 🔍
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,7 +1,7 @@
-using OOQP
+using EasyQP
 using Test
 
-@testset "OOQP.jl" begin
+@testset "EasyQP.jl" begin
     
 V = [1/100 1/80 1/100
      1/80 1/16 1/40
