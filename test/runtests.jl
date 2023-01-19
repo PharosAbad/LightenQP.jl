@@ -1,7 +1,7 @@
-using EasyQP
+using LightenQP
 using Test
 
-@testset "EasyQP.jl" begin
+@testset "LightenQP.jl" begin
     
 V = [1/100 1/80 1/100
      1/80 1/16 1/40

@@ -1,5 +1,5 @@
 "The primal-dual interior point algorithms supplied by OOQP"
-module EasyQP
+module LightenQP
 #=
 #solving convex quadratic programming (QP) problems in the following form
 	min   (1/2)x′Vx+q′x

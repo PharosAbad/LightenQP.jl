@@ -47,7 +47,7 @@ Outputs
     x, status = mpcQP(Q)
 ```
 
-See [`Documentation for EasyQP.jl`](https://github.com/PharosAbad/EasyQP.jl/wiki)
+See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
 See also [`mQP`](@ref)
 """
