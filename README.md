@@ -5,7 +5,7 @@ ___EasyQP.jl___
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://github.com/PharosAbad/EasyQP.jl/wiki)
 
 <h1 align="center" margin=0px>
-  A pure Julia implementation of EasyQP
+  A pure Julia implementation of OOQP
 </h1>
 
 <p align="center">
@@ -31,7 +31,7 @@ with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N
 
 ## Features
 
-* __Light weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [EasyQP](https://github.com/emgertz/EasyQP)
+* __Light weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [OOQP](https://github.com/emgertz/OOQP)
 * __Fast__: beat [Clarabel](https://github.com/oxfordcontrol/Clarabel.jl) for efficient portfolio seeking
 * __Open Source__: Our code is available on [GitHub](https://github.com/PharosAbad/EasyQP.jl) and distributed under the MIT License
 * __Arbitrary Precision Arithmetic__: fully support for `BigFloat`
