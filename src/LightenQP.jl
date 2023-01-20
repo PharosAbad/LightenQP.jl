@@ -10,12 +10,13 @@ https://github.com/oxfordcontrol/qpip/blob/master/qpip.m    solver OOQP, but in 
 =#
 
 using LinearAlgebra
-export Options, mQP
+export modelQP, optionsQP, solutionQP
 export mpcQP
 
 
 include("./types.jl")
 
+# Algorithm MPC (Mehrotra Predictor-Corrector), Primal-Dual Interior-Point Algorithms
 include("./MPC.jl")
 
 

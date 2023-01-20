@@ -8,7 +8,7 @@ V = [1/100 1/80 1/100
      1/100 1/40 1/25]
 E = [109 / 100; 23 / 20; 119 / 100]
 
-Q = mQP(V, -E)
+Q = modelQP(V, -E)
 x, status = mpcQP(Q)
 
 @test status > 0

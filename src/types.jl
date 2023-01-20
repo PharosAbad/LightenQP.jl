@@ -2,52 +2,49 @@
 
 """
 
-        Options(; kwargs...)       The default Settings is set by Float64 type
-        Options{T<:AbstractFloat}(; kwargs...)
+        optionsQP(; kwargs...)       The default Settings is set by Float64 type
+        optionsQP{T<:AbstractFloat}(; kwargs...)
 
-kwargs are from the fields of Options{T<:AbstractFloat} for Float64 and BigFloat
+kwargs are from the fields of optionsQP{T<:AbstractFloat} for Float64 and BigFloat
 
     maxIter::Int64         #700
-    gamma::T        #0.99
-    tolMu::T        #1e-14
-    tolR::T         #1e-14
-    minPhi::T       #1e7
+    scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
+    tolMu::T        #1e-14  violation of the complementarity condition
+    tolR::T         #1e-14  norm(resid) <= tolR * norm(modelQP)
+    minPhi::T       #1e7    phi_min_history, not a foolproof test
 
+see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
 """
-struct Options{T<:AbstractFloat}
+struct optionsQP{T<:AbstractFloat}
     maxIter::Int64    #100
-    gamma::T   # 0.99
+    scaleStep::T   # 0.99
     tolMu::T   #1e-7
     tolR::T   #1e-7
     minPhi::T  #1e10
 end
 
-Options(; kwargs...) = Options{Float64}(; kwargs...)
+optionsQP(; kwargs...) = optionsQP{Float64}(; kwargs...)
 
-function Options{Float64}(; maxIter=700,
-    gamma=0.99,
+function optionsQP{Float64}(; maxIter=700,
+    scaleStep=0.99,
     tolMu=1e-14,  #2^-26,   #1e-7,
     tolR=1e-14,  #2^-26,   #1e-7,
     minPhi=1e7)
-    Options{Float64}(maxIter, gamma, tolMu, tolR, minPhi)
+    optionsQP{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
 
-function Options{BigFloat}(; maxIter=700,
-    gamma=0.99,
+function optionsQP{BigFloat}(; maxIter=700,
+    scaleStep=0.99,
     tolMu=1e-17,
     tolR=1e-17,
     minPhi=1e21)
-    Options{BigFloat}(maxIter, gamma, tolMu, tolR, minPhi)
+    optionsQP{BigFloat}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
 
-#=
-function Options(P::Problem; kwargs...)
-    Options{typeof(P).parameters[1]}(; kwargs...)
-end
-=#
+
 """
     
-        mQP(V, q::T; A, b, C, g) where T
+        modelQP(V, q::T; A, b, C, g) where T
 
 define the following convex quadratic programming problems (QP)
 
@@ -59,14 +56,14 @@ define the following convex quadratic programming problems (QP)
 
 For portfolio optimization
 
-    mQP(V, q)   for no short-sale: A = ones(1,N), b = [1],  C = -I, g = zeros(N)
-    mQP(V, q, u)    for bounds 0<= x <= u, and thus A = ones(1,N), b = [1],  C = [-I; I], g = [zeros(N); u]
+    modelQP(V, q)   for no short-sale: A = ones(1,N), b = [1],  C = -I, g = zeros(N)
+    modelQP(V, q, u)    for bounds 0<= x <= u, and thus A = ones(1,N), b = [1],  C = [-I; I], g = [zeros(N); u]
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
-See also [`mpcQP`](@ref)
+See also [`mpcQP`](@ref), [`solutionQP`](@ref)
 """
-struct mQP{T<:AbstractFloat}
+struct modelQP{T<:AbstractFloat}
     V::Matrix{T}
     A::Matrix{T}
     C::Matrix{T}
@@ -78,19 +75,9 @@ struct mQP{T<:AbstractFloat}
     L::Int32
 end
 
-mQP(args...) = mQP{Float64}(args...)
+modelQP(args...) = modelQP{Float64}(args...)
 
-#=
-function mQP(P::Problem{T}) where {T}
-    (; E, V, u, d, G, g, A, b, N, M, J) = P
-    iu = findall(u .< Inf)
-    C = [G; -Matrix{T}(I, N, N); Matrix{T}(I, N, N)[iu, :]]
-    gq = [g; -d; u[iu]]
-    L = J + N + length(iu)
-    mQP(V, A, C, -E, b, gq, N, M, L)
-end
-=#
-function mQP(V, q;
+function modelQP(V, q;
     A = ones(1, length(q)),
     b = ones(1),
     C = -Matrix(I, length(q), length(q)),
@@ -114,7 +101,7 @@ function mQP(V, q;
     (M, N) == size(A) || throw(DimensionMismatch("incompatible dimension: A"))
     (L, N) == size(Cb) || throw(DimensionMismatch("incompatible dimension: C"))
 
-    mQP{T}(Vs,
+    modelQP{T}(Vs,
         convert(Matrix{T}, copy(A)),   #make a copy, just in case it is modified somewhere
         convert(Matrix{T}, Cb),
         qq,
@@ -122,7 +109,7 @@ function mQP(V, q;
         convert(Vector{T}, gb), N, M, L)
 end
 
-function mQP(V, q, u)
+function modelQP(V, q, u)
     T = typeof(q).parameters[1]
     N::Int32 = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
@@ -133,38 +120,58 @@ function mQP(V, q, u)
     g = [zeros(T, N); u[iu]]
     L = N + length(iu)
     M = 1
-    mQP{T}(V, A, C, q, b, g, N, M, L)
+    modelQP{T}(V, A, C, q, b, g, N, M, L)
 end
 
+"""
+    
+    struct solutionQP
 
-struct Variables{T<:AbstractFloat}
+Solution strcture to the following convex quadratic programming problems (QP)
+
+```math
+        min   (1/2)x′Vx+q′x
+        s.t.   Ax=b ∈ R^{M}
+               Cx≤g ∈ R^{L}
+```
+
+    x   : primal solution
+    y   : equality multipliers, dual variables
+    z   : inequality multipliers, dual variables
+    s   : slack variables
+
+See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
+
+See also [`modelQP`](@ref), [`mpcQP`](@ref)
+"""
+struct solutionQP{T<:AbstractFloat}
     x::Vector{T}
     y::Vector{T}
     z::Vector{T}
     s::Vector{T}
 end
 
-function Variables(Q::mQP{T}) where {T}
+function solutionQP(Q::modelQP{T}) where {T}
     (; N, M, L) = Q
     x = zeros(T, N)
     y = zeros(T, M)
     z = ones(T, L)
     s = ones(T, L)
-    Variables(x, y, z, s)
+    solutionQP(x, y, z, s)
 end
 
-struct Residuals{T<:AbstractFloat}
+struct residQP{T<:AbstractFloat}
     rV::Vector{T}
     rA::Vector{T}
     rC::Vector{T}
     rS::Vector{T}
 end
 
-function Residuals(Q::mQP{T}) where {T}
+function residQP(Q::modelQP{T}) where {T}
     (; N, M, L) = Q
     rV = zeros(T, N)
     rA = zeros(T, M)
     rC = zeros(T, L)
     rS = zeros(T, L)
-    Residuals(rV, rA, rC, rS)
+    residQP(rV, rA, rC, rS)
 end
