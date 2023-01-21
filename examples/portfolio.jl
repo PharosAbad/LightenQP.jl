@@ -11,15 +11,15 @@ V = [1/100 1/80 1/100
      1/100 1/40 1/25]
 E = [109 / 100; 23 / 20; 119 / 100]
 
-#Q = modelQP(V, -E)
-#x, status = mpcQP(Q)
+#Q = OOQP(V, -E)
+#x, status = solveOOQP(Q)
 
 
 
 u = [0.7; +Inf; 0.7]
-Q = modelQP(V, -E, u)
+Q = OOQP(V, -E, u)
 #options = optionsQP()
-x, status = mpcQP(Q)
+x, status = solveOOQP(Q)
 
 #=
 using EfficientFrontier

@@ -1,10 +1,12 @@
+#the solver, Algorithm MPC (Mehrotra Predictor-Corrector) from OOQP
+
 
 """
 
-        mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where T
-        mpcQP(Q::modelQP; options=optionsQP())
+        solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where T
+        solveOOQP(Q::OOQP; options=optionsQP())
 
-solving convex quadratic programming problems (QP) in the following form define by Q::modelQP
+solving convex quadratic programming problems (QP) in the following form define by Q::OOQP
 
 ```math
         min   (1/2)x′Vx+q′x
@@ -20,31 +22,29 @@ Outputs
 
 # Example
 ```
-    using OOQP
+    using LightenQP
     V = [1/100 1/80 1/100
          1/80 1/16 1/40
          1/100 1/40 1/25]
     E = [109 / 100; 23 / 20; 119 / 100]
     u = [0.7; +Inf; 0.7]
-    Q = modelQP(V, -E, u)
-    x, status = mpcQP(Q)
+    Q = OOQP(V, -E, u)
+    x, status = solveOOQP(Q)
 ```
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
-See also [`modelQP`](@ref),  [`solutionQP`](@ref), [`optionsQP`](@ref)
+See also [`OOQP`](@ref),  [`solutionQP`](@ref), [`optionsQP`](@ref), [`mpcQP`](@ref)
 """
-function mpcQP(Q::modelQP{T}; options=optionsQP{T}()) where {T}
+function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
     #cook up an initial solution
     Soln = solutionQP(Q)
     res = residQP(Q)
-    J, idxS = initJacobian(Q)
-    #data norm initialize
-    normD = dataNorm(Q)
-
-    #problem variable initialization
-    defaultStart!(Soln, res, Q, J, normD)
+    J, idxS = initJacobian(Q)    
+    normD = dataNorm(Q) #data norm initialize
+    defaultStart!(Soln, res, Q, J, normD)    
     (; z, s) = Soln
+
     iter = 1
     status = 0
     while iter <= options.maxIter
@@ -62,6 +62,7 @@ function mpcQP(Q::modelQP{T}; options=optionsQP{T}()) where {T}
         # PREDICTOR STEP    find the RHS for this step        
         J[idxS] = -(s ./ z) #updateJacobian
         F = lu(J)
+        #F = ldlt(sparse(J))
         res.rS .= z .* s    # w = SZ1
         stepAff = searchDirection(F, Q, Soln, res)
         alphaAff = stepBound(Soln, stepAff)  #determine the largest step that preserves consistency of the multiplier constraint  
@@ -81,9 +82,9 @@ function mpcQP(Q::modelQP{T}; options=optionsQP{T}()) where {T}
     return Soln, iter
 end
 
-function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
-    Q = modelQP(V, q; A=A, b=b, C=C, g=g)
-    return mpcQP(Q; options=options)
+function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
+    Q = OOQP(V, q; A=A, b=b, C=C, g=g)
+    return solveOOQP(Q; options=options)
 end
 
 
@@ -159,6 +160,7 @@ function defaultStart!(Soln, res, Q, J, normD)
     calcResiduals!(res, Q, Soln)
     res.rS .= z .* s
     F = lu(J)
+    #F = ldlt(sparse(J))
     step = searchDirection(F, Q, Soln, res)
     addToSolution!(Soln, step, 1.0) #take the full affine scaling step
 
@@ -176,7 +178,7 @@ function dualityGap(Q, Soln)
 end
 
 
-function initJacobian(Q::modelQP{T}) where {T}
+function initJacobian(Q::OOQP{T}) where {T}
     (; V, A, C, N, M, L) = Q
     #Create the Jacoban matrix with a dummy Sigma
     S = -Matrix{T}(I, L, L)

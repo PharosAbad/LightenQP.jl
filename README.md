@@ -15,7 +15,7 @@ ___LightenQP.jl___
   <a href="https://github.com/PharosAbad/LightenQP.jl/wiki">Documentation</a>
 </p>
 
-**LightenQP.jl** solves the following convex quadratic programming (QP) problems:
+**LightenQP.jl** solves the following convex quadratic programming problems (called `OOQP`):
 
 $$
 \begin{array}
@@ -27,12 +27,24 @@ s.t. & \mathbf{Az}=\mathbf{b}\in\mathbb{R}^{M}\\
 \end{array}
 $$
 
-with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N}$.
+with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N}$. The general quadratic programming formulation solved by `LightenQP` is (`OOQP + d≤z≤u + h≤Cz`)
+
+$$
+\begin{array}
+[c]{cl}
+\min & \frac{1}{2}\mathbf{z}^{\prime}\mathbf{Vz}+\mathbf{z}^{\prime}
+\mathbf{q}\\
+s.t. & \mathbf{Az}=\mathbf{b}\in\mathbb{R}^{M}\\
+& \mathbf{h}\leq\mathbf{Cz}\leq\mathbf{g}\in\mathbb{R}^{L}\\
+& \boldsymbol{d}\leq\mathbf{z}\leq\boldsymbol{u}\in\mathbb{R}^{N}
+\end{array}
+$$
 
 ## Features
 
-* __Light weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [OOQP](https://github.com/emgertz/OOQP)
-* __Fast__: beat [Clarabel](https://github.com/oxfordcontrol/Clarabel.jl) for efficient portfolio seeking
+* __Light Weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [OOQP](https://github.com/emgertz/OOQP)
+* __Fast__: beat [Clarabel](https://github.com/oxfordcontrol/Clarabel.jl) for efficient portfolio seeking (when $N < 100$; for $N > 100$, roughly the same speed or a bit slower, maybe a *Rank-1 Update for LU*, or `Pardiso` will speed up)
+* __Versatile__: solving a general quadratic programming problem mentioned above. $\mathbf{V}$ can be positive definite or positive semi-definite
 * __Open Source__: Our code is available on [GitHub](https://github.com/PharosAbad/LightenQP.jl) and distributed under the MIT License
 * __Arbitrary Precision Arithmetic__: fully support for `BigFloat`
 
