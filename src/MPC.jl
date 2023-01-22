@@ -17,7 +17,7 @@ solving convex quadratic programming problems (QP) in the following form define 
 Outputs
 
     x::solutionQP   : structure containing the primal solution 'x', dual variables 'y' and 'z' corresponding to the equality 
-                    and inequality multipliers respectively, and slack variables 's'
+                     and inequality multipliers respectively, and slack variables 's'
     status::Int     : > 0 if successful (=iter_count), 0 if infeasibility detected, < 0 if not converged (=-iter_count)
 
 # Example
@@ -27,20 +27,26 @@ Outputs
          1/80 1/16 1/40
          1/100 1/40 1/25]
     E = [109 / 100; 23 / 20; 119 / 100]
-    u = [0.7; +Inf; 0.7]
-    Q = OOQP(V, -E, u)
-    x, status = solveOOQP(Q)
+    u = [0.7; +Inf; 0.7]    #Inf means no bounded
+    Q = OOQP(V, -E, u)  #OOQP + bounds 0 <= x <= u
+    x, status = solveOOQP(Q)    #solve by Algorithm MPC (Mehrotra Predictor-Corrector)
 ```
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
 See also [`OOQP`](@ref),  [`solutionQP`](@ref), [`optionsQP`](@ref), [`mpcQP`](@ref)
 """
+function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
+    Q = OOQP(V, q; A=A, b=b, C=C, g=g)
+    return solveOOQP(Q; options=options)
+end
+
+
 function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
     #cook up an initial solution
     Soln = solutionQP(Q)
     res = residQP(Q)
-    J, idxS = initJacobian(Q)    
+    J, idxS = initJacobian(Q)
     normD = dataNorm(Q) #data norm initialize
     defaultStart!(Soln, res, Q, J, normD)    
     (; z, s) = Soln
@@ -62,8 +68,9 @@ function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
         # PREDICTOR STEP    find the RHS for this step        
         J[idxS] = -(s ./ z) #updateJacobian
         F = lu(J)
+        #F = cholesky(J)
         #F = ldlt(sparse(J))
-        res.rS .= z .* s    # w = SZ1
+        #res.rS .= z .* s    # w = SZ1
         stepAff = searchDirection(F, Q, Soln, res)
         alphaAff = stepBound(Soln, stepAff)  #determine the largest step that preserves consistency of the multiplier constraint  
         muAff = muStep(Soln, stepAff, alphaAff)
@@ -80,11 +87,6 @@ function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
     iter = (status == 1) ? iter : ((status == 0) ? -iter : 0)
 
     return Soln, iter
-end
-
-function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
-    Q = OOQP(V, q; A=A, b=b, C=C, g=g)
-    return solveOOQP(Q; options=options)
 end
 
 
@@ -120,7 +122,8 @@ function calcResiduals!(res, Q, Soln)
     rV .= V * x - A' * y + C' * z + q
     rA .= A * x - b
     rC .= C * x + s - g
-    rS .= 0
+    #rS .= 0
+    rS .= z .* s    # w = SZ1
     return nothing
 end
 
@@ -158,8 +161,9 @@ function defaultStart!(Soln, res, Q, J, normD)
     s .= s0
 
     calcResiduals!(res, Q, Soln)
-    res.rS .= z .* s
+    #res.rS .= z .* s
     F = lu(J)
+    #F = cholesky(J)
     #F = ldlt(sparse(J))
     step = searchDirection(F, Q, Soln, res)
     addToSolution!(Soln, step, 1.0) #take the full affine scaling step
@@ -190,6 +194,7 @@ function initJacobian(Q::OOQP{T}) where {T}
         A Z1 Z2'
         C Z2 S]
     #get the indices for the entries of S
+    #display(det(J))
     idx = (N + M) .+ (1:L)
     idxS = Base._sub2ind(size(J), idx, idx)
     return J, idxS

@@ -16,10 +16,10 @@ E = [109 / 100; 23 / 20; 119 / 100]
 
 
 
-u = [0.7; +Inf; 0.7]
-Q = OOQP(V, -E, u)
+u = [0.7; +Inf; 0.7]     #Inf means no bounded
+Q = OOQP(V, -E, u)       #OOQP + bounds 0 <= x <= u
 #options = optionsQP()
-x, status = solveOOQP(Q)
+x, status = solveOOQP(Q) #solve by Algorithm MPC (Mehrotra Predictor-Corrector)
 
 #=
 using EfficientFrontier
