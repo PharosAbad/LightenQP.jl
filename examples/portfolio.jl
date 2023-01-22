@@ -32,3 +32,5 @@ mu = x.x'*E
 z = ePortfolio(mu, aEF)
 x.x - z
 =#
+
+

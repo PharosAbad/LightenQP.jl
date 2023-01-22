@@ -13,5 +13,4 @@ x, status = mpcQP(Q)
 
 @test status > 0
 @test isapprox(x.x[3], 1)
-
 end

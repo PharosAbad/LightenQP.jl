@@ -23,5 +23,4 @@ include("./MPC.jl")
 #The general quadratic programming formulation recognized by LightenQP, solved by solveOOQP (Algorithm MPC)
 include("./mpcQP.jl")
 
-
 end
