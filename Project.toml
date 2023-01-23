@@ -1,7 +1,7 @@
 name = "LightenQP"
 uuid = "732b1220-b3b1-47df-92b9-9aafce73c71b"
 authors = ["Pharos Abad"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
