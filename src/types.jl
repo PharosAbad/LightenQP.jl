@@ -62,21 +62,21 @@ function OOQP(V, q;
     (M, N) == size(A) || throw(DimensionMismatch("incompatible dimension: A"))
     (L, N) == size(Cb) || throw(DimensionMismatch("incompatible dimension: C"))
 
-    if T == BigFloat
-        OOQP{T}(Vs,
-            convert(Matrix{T}, copy(A)),   #make a copy, just in case it is modified somewhere
-            convert(Matrix{T}, Cb),
-            qq,
-            convert(Vector{T}, copy(vec(b))),
-            convert(Vector{T}, gb), N, M, L)
-    else
+    #if T == BigFloat
+    OOQP{T}(Vs,
+        convert(Matrix{T}, copy(A)),   #make a copy, just in case it is modified somewhere
+        convert(Matrix{T}, Cb),
+        qq,
+        convert(Vector{T}, copy(vec(b))),
+        convert(Vector{T}, gb), N, M, L)
+    #= else
         OOQP{T}(sparse(Vs),
             sparse(convert(Matrix{T}, copy(A))),   #make a copy, just in case it is modified somewhere
             sparse(convert(Matrix{T}, Cb)),
             qq,
             convert(Vector{T}, copy(vec(b))),
             convert(Vector{T}, gb), N, M, L)
-    end
+    end =#
 end
 
 function OOQP(V, q, u)

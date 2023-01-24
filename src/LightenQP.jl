@@ -10,7 +10,7 @@ https://github.com/oxfordcontrol/qpip/blob/master/qpip.m    solver OOQP, but in 
 =#
 
 using LinearAlgebra
-using SparseArrays
+#using SparseArrays
 export OOQP	#, Settings, Solution
 export solveOOQP, mpcQP
 
