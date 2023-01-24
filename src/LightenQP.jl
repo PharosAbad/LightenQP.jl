@@ -11,7 +11,7 @@ https://github.com/oxfordcontrol/qpip/blob/master/qpip.m    solver OOQP, but in 
 
 using LinearAlgebra
 #using SparseArrays
-export OOQP, optionsQP, solutionQP
+export OOQP	#, optionsQP, solutionQP
 export solveOOQP, mpcQP
 
 

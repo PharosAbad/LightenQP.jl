@@ -2,12 +2,12 @@
 
 """
 
-        mpcQP(V, q, A, b, C, g, d, u, h; options)    :OOQP + 'd≤z≤u' + 'h≤Cz'
-        mpcQP(V, q, A, b, C, g, d, u; options)       :OOQP + 'd≤z≤u'
-        mpcQP(V, q, C, g, d, u, h; options)          :OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b'
-        mpcQP(V, q, A, b, C, g; options)             :OOQP
-        mpcQP(V, q, d, u; options)                   :OOQP + 'd≤z≤u' - 'Az=b, Cz≤g'
-        mpcQP(O::OOQP; options)                      :OOQP
+        mpcQP(V, q, A, b, C, g, d, u, h; settings)    :OOQP + 'd≤z≤u' + 'h≤Cz'
+        mpcQP(V, q, A, b, C, g, d, u; settings)       :OOQP + 'd≤z≤u'
+        mpcQP(V, q, C, g, d, u, h; settings)          :OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b'
+        mpcQP(V, q, A, b, C, g; settings)             :OOQP
+        mpcQP(V, q, d, u; settings)                   :OOQP + 'd≤z≤u' - 'Az=b, Cz≤g'
+        mpcQP(O::OOQP; settings)                      :OOQP
 
 wrapping `solveOOQP` for quadratic programming problems: `mpcQP(V, q, A, b, C, g, d, u, h)` for (OOQP + 'd≤z≤u' + 'h≤Cz')
 
@@ -44,10 +44,10 @@ wrapping `solveOOQP` for quadratic programming problems: `mpcQP(V, q, A, b, C, g
 ```
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
-See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`solutionQP`](@ref), [`optionsQP`](@ref)
+See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`Solution`](@ref), [`Settings`](@ref)
 """
 function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T},
-    d::Vector{T}, u::Vector{T}, h::Vector{T}; options=optionsQP{T}()) where {T}
+    d::Vector{T}, u::Vector{T}, h::Vector{T}; settings=Settings{T}()) where {T}
 
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
@@ -59,13 +59,13 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix
     Cg = [C[ig, :]; -Matrix{T}(I, N, N)[id, :]; Matrix{T}(I, N, N)[iu, :]; -C[ih, :]]
     gg = [g[ig]; -d[id]; u[iu]; -h[ih]]
     O = OOQP(V, q; A=A, b=b, C=Cg, g=gg)
-    return solveOOQP(O; options=options)
+    return solveOOQP(O; settings=settings)
 end
 
 
 #OOQP + 'd≤z≤u'
 function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T},
-    d::Vector{T}, u::Vector{T}; options=optionsQP{T}()) where {T}
+    d::Vector{T}, u::Vector{T}; settings=Settings{T}()) where {T}
 
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
@@ -76,13 +76,13 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix
     Cg = [C[ig, :]; -Matrix{T}(I, N, N)[id, :]; Matrix{T}(I, N, N)[iu, :]]
     gg = [g[ig]; -d[id]; u[iu]]
     O = OOQP(V, q; A=A, b=b, C=Cg, g=gg)
-    return solveOOQP(O; options=options)
+    return solveOOQP(O; settings=settings)
 end
 
 
 #OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b'
 function mpcQP(V::Matrix{T}, q::Vector{T}, C::Matrix{T}, g::Vector{T},
-    d::Vector{T}, u::Vector{T}, h::Vector{T}; options=optionsQP{T}()) where {T}
+    d::Vector{T}, u::Vector{T}, h::Vector{T}; settings=Settings{T}()) where {T}
 
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
@@ -94,25 +94,25 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, C::Matrix{T}, g::Vector{T},
     Cg = [C[ig, :]; -Matrix{T}(I, N, N)[id, :]; Matrix{T}(I, N, N)[iu, :]; -C[ih, :]]
     gg = [g[ig]; -d[id]; u[iu]; -h[ih]]
     O = OOQP(V, q; A=zeros(T, 0, N), b=zeros(T, 0), C=Cg, g=gg)
-    return solveOOQP(O; options=options)
+    return solveOOQP(O; settings=settings)
 end
 
 
 #OOQP
-function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
-    #alias for solveOOQP(V, q, A, b, C, g; options=options)
+function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; settings=Settings{T}()) where {T}
+    #alias for solveOOQP(V, q, A, b, C, g; settings=settings)
     O = OOQP(V, q; A=A, b=b, C=C, g=g)
-    return solveOOQP(O; options=options)
+    return solveOOQP(O; settings=settings)
 end
 
-function mpcQP(O::OOQP{T}; options=optionsQP{T}()) where {T}
-    #alias for solveOOQP(O; options=options)
-    return solveOOQP(O; options=options)
+function mpcQP(O::OOQP{T}; settings=Settings{T}()) where {T}
+    #alias for solveOOQP(O; settings=settings)
+    return solveOOQP(O; settings=settings)
 end
 
 
 #OOQP + 'd≤z≤u' - 'Az=b, Cz≤g'
-function mpcQP(V::Matrix{T}, q::Vector{T}, d::Vector{T}, u::Vector{T}; options=optionsQP{T}()) where {T}
+function mpcQP(V::Matrix{T}, q::Vector{T}, d::Vector{T}, u::Vector{T}; settings=Settings{T}()) where {T}
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
     N = length(q)
@@ -121,6 +121,6 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, d::Vector{T}, u::Vector{T}; options=o
     C = [-Matrix{T}(I, N, N)[id, :]; Matrix{T}(I, N, N)[iu, :]]
     g = [-d[id]; u[iu]]
     O = OOQP(V, q; A=zeros(T, 0, N), b=zeros(T, 0), C=C, g=g)
-    return solveOOQP(O; options=options)
+    return solveOOQP(O; settings=settings)
 end
 

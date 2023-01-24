@@ -3,10 +3,10 @@
 
 """
 
-        optionsQP(; kwargs...)       The default Settings is set by Float64 type
-        optionsQP{T<:AbstractFloat}(; kwargs...)
+        Settings(; kwargs...)       The default Settings is set by Float64 type
+        Settings{T<:AbstractFloat}(; kwargs...)
 
-kwargs are from the fields of optionsQP{T<:AbstractFloat} for Float64 and BigFloat
+kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloat
 
     maxIter::Int64         #700
     scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
@@ -16,7 +16,7 @@ kwargs are from the fields of optionsQP{T<:AbstractFloat} for Float64 and BigFlo
 
 see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
 """
-struct optionsQP{T<:AbstractFloat}
+struct Settings{T<:AbstractFloat}
     maxIter::Int64    #100
     scaleStep::T   # 0.99
     tolMu::T   #1e-7
@@ -24,22 +24,22 @@ struct optionsQP{T<:AbstractFloat}
     minPhi::T  #1e10
 end
 
-optionsQP(; kwargs...) = optionsQP{Float64}(; kwargs...)
+Settings(; kwargs...) = Settings{Float64}(; kwargs...)
 
-function optionsQP{Float64}(; maxIter=700,
+function Settings{Float64}(; maxIter=700,
     scaleStep=0.99,
     tolMu=2^-47,    #1e-14,  #2^-26,   #1e-7,
     tolR=2^-37,    #1e-14,  #2^-26,   #1e-7,
     minPhi=2^23)
-    optionsQP{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
+    Settings{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
 
-function optionsQP{BigFloat}(; maxIter=700,
+function Settings{BigFloat}(; maxIter=700,
     scaleStep=0.99,
     tolMu=2^-87,
     tolR=2^-77,
     minPhi=2^23)
-    optionsQP{BigFloat}(maxIter, scaleStep, tolMu, tolR, minPhi)
+    Settings{BigFloat}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
 
 
@@ -64,7 +64,7 @@ For portfolio optimization
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
-See also [`solveOOQP`](@ref), [`solutionQP`](@ref), [`mpcQP`](@ref), [`optionsQP`](@ref)
+See also [`solveOOQP`](@ref), [`Solution`](@ref), [`mpcQP`](@ref), [`Settings`](@ref)
 """
 struct OOQP{T<:AbstractFloat}
     V::Matrix{T}
@@ -144,7 +144,7 @@ end
 
 """
     
-    struct solutionQP
+    struct Solution
 
 Solution strcture to the following convex quadratic programming problems (called OOQP)
 
@@ -163,34 +163,34 @@ See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.j
 
 See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`mpcQP`](@ref)
 """
-struct solutionQP{T<:AbstractFloat}
+struct Solution{T<:AbstractFloat}
     x::Vector{T}
     y::Vector{T}
     z::Vector{T}
     s::Vector{T}
 end
 
-function solutionQP(Q::OOQP{T}) where {T}
+function Solution(Q::OOQP{T}) where {T}
     (; N, M, L) = Q
     x = zeros(T, N)
     y = zeros(T, M)
     z = ones(T, L)
     s = ones(T, L)
-    solutionQP(x, y, z, s)
+    Solution(x, y, z, s)
 end
 
-struct residQP{T<:AbstractFloat}
+struct Residuals{T<:AbstractFloat}
     rV::Vector{T}
     rA::Vector{T}
     rC::Vector{T}
     rS::Vector{T}
 end
 
-function residQP(Q::OOQP{T}) where {T}
+function Residuals(Q::OOQP{T}) where {T}
     (; N, M, L) = Q
     rV = zeros(T, N)
     rA = zeros(T, M)
     rC = zeros(T, L)
     rS = zeros(T, L)
-    residQP(rV, rA, rC, rS)
+    Residuals(rV, rA, rC, rS)
 end

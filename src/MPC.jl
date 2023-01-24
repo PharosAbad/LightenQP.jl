@@ -2,8 +2,8 @@
 
 """
 
-        solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where T
-        solveOOQP(Q::OOQP; options=optionsQP())
+        solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; settings=Settings{T}()) where T
+        solveOOQP(Q::OOQP; settings=Settings())
 
 solving convex quadratic programming problems (QP) in the following form define by Q::OOQP
 
@@ -15,7 +15,7 @@ solving convex quadratic programming problems (QP) in the following form define 
 
 Outputs
 
-    x::solutionQP   : structure containing the primal solution 'x', dual variables 'y' and 'z' corresponding to the equality 
+    x::Solution   : structure containing the primal solution 'x', dual variables 'y' and 'z' corresponding to the equality 
                      and inequality multipliers respectively, and slack variables 's'
     status::Int     : > 0 if successful (=iter_count), 0 if infeasibility detected, < 0 if not converged (=-iter_count)
 
@@ -33,18 +33,18 @@ Outputs
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
-See also [`OOQP`](@ref),  [`solutionQP`](@ref), [`optionsQP`](@ref), [`mpcQP`](@ref)
+See also [`OOQP`](@ref),  [`Solution`](@ref), [`Settings`](@ref), [`mpcQP`](@ref)
 """
-function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; options=optionsQP{T}()) where {T}
+function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; settings=Settings{T}()) where {T}
     Q = OOQP(V, q; A=A, b=b, C=C, g=g)
-    return solveOOQP(Q; options=options)
+    return solveOOQP(Q; settings=settings)
 end
 
 
-function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
+function solveOOQP(Q::OOQP{T}; settings=Settings{T}()) where {T}
     #cook up an initial solution
-    Soln = solutionQP(Q)
-    res = residQP(Q)
+    Soln = Solution(Q)
+    res = Residuals(Q)
     J, idxS = initJacobian(Q)
     normD = dataNorm(Q) #data norm initialize
     defaultStart!(Soln, res, Q, J, normD)
@@ -52,11 +52,11 @@ function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
     
     iter = 1
     status = 0
-    while iter <= options.maxIter
+    while iter <= settings.maxIter
         muval = calcMu(Soln)    #get the complementarity measure mu
         calcResiduals!(res, Q, Soln)    ##Update the right hand side residuals
         #termination test
-        status = checkStatus(Q, Soln, res, options, muval, normD)
+        status = checkStatus(Q, Soln, res, settings, muval, normD)
         if status != 0
             break
         end
@@ -71,7 +71,7 @@ function solveOOQP(Q::OOQP{T}; options=optionsQP{T}()) where {T}
         rSfix!(res, stepAff, -sigma * muval)
         stepCC = searchDirection(F, Q, Soln, res)
         alphaMax = stepBound(Soln, stepCC)   #determine the largest step that preserves consistency of the multiplier constraint  
-        stepSize = alphaMax * options.scaleStep #use a crude step scaling factor
+        stepSize = alphaMax * settings.scaleStep #use a crude step scaling factor
         addToSolution!(Soln, stepCC, stepSize)   #take the step and update mu
         iter += 1
     end
@@ -113,14 +113,14 @@ function calcResiduals!(res, Q, Soln)
 end
 
 
-function checkStatus(Q, Soln, res, options, muval, normD)
+function checkStatus(Q, Soln, res, settings, muval, normD)
     #test for convergence or infeasibility
     gap = abs(dualityGap(Q, Soln))
     normR = residualNorm(res)
     phi = (normR + gap) ./ normD
-    minPhi = min(options.minPhi, phi)
+    minPhi = min(settings.minPhi, phi)
 
-    if muval <= options.tolMu && normR <= options.tolR * normD
+    if muval <= settings.tolMu && normR <= settings.tolR * normD
         status = 1  #convergence
     elseif (phi > 1e-8 && phi > 1e4 * minPhi)
         status = -1 #infeasible
@@ -217,7 +217,7 @@ function searchDirection(F, Q, Soln, res)
     dz = -lhs[(1:L).+(N+M)]
     #post-solve solve for the ds
     ds = -(rS + s .* dz) ./ z
-    return solutionQP(dx, dy, dz, ds)    #the output should have the same structure as the Soln
+    return Solution(dx, dy, dz, ds)    #the output should have the same structure as the Soln
 end
 
 
