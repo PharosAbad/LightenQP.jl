@@ -54,7 +54,7 @@ __LightenQP.jl__ can be added by
 
 - `import Pkg; Pkg.add("LightenQP")`
 - `pkg> add LightenQP`
-- `pkg> dev LightenQP` for test nightly version. To use the registered version again `pkg> free LightenQP`
+- `pkg> dev LightenQP` for testing nightly version. To use the registered version again `pkg> free LightenQP`
 
 ## License 🔍
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

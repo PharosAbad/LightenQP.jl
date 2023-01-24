@@ -49,7 +49,7 @@ function solveOOQP(Q::OOQP{T}; settings=Settings{T}()) where {T}
     normD = dataNorm(Q) #data norm initialize
     defaultStart!(Soln, res, Q, J, normD)
     (; z, s) = Soln
-    
+
     iter = 1
     status = 0
     while iter <= settings.maxIter
@@ -63,6 +63,7 @@ function solveOOQP(Q::OOQP{T}; settings=Settings{T}()) where {T}
         # PREDICTOR STEP    find the RHS for this step        
         J[idxS] = -(s ./ z) #updateJacobian
         F = lu(J)
+        #display((typeof(J),typeof(F)))
         stepAff = searchDirection(F, Q, Soln, res)
         alphaAff = stepBound(Soln, stepAff)  #determine the largest step that preserves consistency of the multiplier constraint  
         muAff = muStep(Soln, stepAff, alphaAff)
@@ -164,13 +165,27 @@ end
 function initJacobian(Q::OOQP{T}) where {T}
     (; V, A, C, N, M, L) = Q
     #Create the Jacoban matrix with a dummy Sigma
-    S = -Matrix{T}(I, L, L)
-    Z1 = zeros(T, M, M)
-    Z2 = zeros(T, L, M)
+
+    if T == BigFloat
+        S = -Matrix{T}(I, L, L)
+        Z1 = zeros(T, M, M)
+        Z2 = zeros(T, L, M)
+        J = [V A' C'
+             A Z1 Z2'
+             C Z2 S]
+    else
+        S = -sparse(I, L, L)
+        Z1 = spzeros(M, M)
+        Z2 = spzeros(L, M)
+        J = sparse(
+            [V A' C'
+             A Z1 Z2'
+             C Z2 S])
+    end
     #construct the jacobian
-    J = [V A' C'
+    #= J = [V A' C'
         A Z1 Z2'
-        C Z2 S]
+        C Z2 S] =#
     #get the indices for the entries of S
     idx = (N + M) .+ (1:L)
     idxS = Base._sub2ind(size(J), idx, idx)
