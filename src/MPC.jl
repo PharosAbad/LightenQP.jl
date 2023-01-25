@@ -17,7 +17,7 @@ Outputs
 
     x::Solution   : structure containing the primal solution 'x', dual variables 'y' and 'z' corresponding to the equality 
                      and inequality multipliers respectively, and slack variables 's'
-    status::Int     : > 0 if successful (=iter_count), 0 if infeasibility detected, < 0 if not converged (=-iter_count)
+    status::Int   : > 0 if successful (=iter_count), 0 if infeasibility detected, < 0 if not converged (=-iter_count)
 
 # Example
 ```
@@ -39,7 +39,6 @@ function solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Ma
     Q = OOQP(V, q; A=A, b=b, C=C, g=g)
     return solveOOQP(Q; settings=settings)
 end
-
 
 function solveOOQP(Q::OOQP{T}; settings=Settings{T}()) where {T}
     #cook up an initial solution
@@ -165,23 +164,9 @@ end
 function initJacobian(Q::OOQP{T}) where {T}
     (; V, A, C, N, M, L) = Q
     #Create the Jacoban matrix with a dummy Sigma
-
-    #if T == BigFloat
     S = -Matrix{T}(I, L, L)
     Z1 = zeros(T, M, M)
     Z2 = zeros(T, L, M)
-    #=     J = [V A' C'
-             A Z1 Z2'
-             C Z2 S]
-    else
-        S = -sparse(I, L, L)
-        Z1 = spzeros(M, M)
-        Z2 = spzeros(L, M)
-        J = sparse(
-            [V A' C'
-             A Z1 Z2'
-             C Z2 S])
-    end =#
     #construct the jacobian
     J = [V A' C'
         A Z1 Z2'

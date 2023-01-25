@@ -1,5 +1,6 @@
 "The primal-dual interior point algorithms supplied by OOQP"
 module LightenQP
+
 #=
 #solving convex quadratic programming (QP) problems in the following form (called by OOQP)
 	min   (1/2)x′Vx+q′x
@@ -13,7 +14,6 @@ using LinearAlgebra
 #using SparseArrays
 export OOQP	#, Settings, Solution
 export solveOOQP, mpcQP
-
 
 include("./types.jl")
 

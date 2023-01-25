@@ -1,6 +1,5 @@
 # Problem-Algorithm-Solver pattern
 
-
 """
     
         OOQP(V, q::T; A=A, b=b, C=C, g=g) where T
@@ -50,7 +49,6 @@ function OOQP(V, q;
 
     qq = copy(vec(q))     #make sure vector and a new copy
     Vs = convert(Matrix{T}, (V + V') / 2)   #make sure symmetric
-
     #remove Inf bounds
     g = vec(g)
     ik = findall(.!isinf.(g))
@@ -61,22 +59,13 @@ function OOQP(V, q;
     L::Int32 = length(gb)
     (M, N) == size(A) || throw(DimensionMismatch("incompatible dimension: A"))
     (L, N) == size(Cb) || throw(DimensionMismatch("incompatible dimension: C"))
-
-    #if T == BigFloat
+    
     OOQP{T}(Vs,
         convert(Matrix{T}, copy(A)),   #make a copy, just in case it is modified somewhere
         convert(Matrix{T}, Cb),
         qq,
         convert(Vector{T}, copy(vec(b))),
         convert(Vector{T}, gb), N, M, L)
-    #= else
-        OOQP{T}(sparse(Vs),
-            sparse(convert(Matrix{T}, copy(A))),   #make a copy, just in case it is modified somewhere
-            sparse(convert(Matrix{T}, Cb)),
-            qq,
-            convert(Vector{T}, copy(vec(b))),
-            convert(Vector{T}, gb), N, M, L)
-    end =#
 end
 
 function OOQP(V, q, u)
@@ -88,9 +77,6 @@ function OOQP(V, q, u)
     iu = findall(u .< Inf)
     C = [-Matrix{T}(I, N, N); Matrix{T}(I, N, N)[iu, :]]
     g = [zeros(T, N); u[iu]]
-    #L = N + length(iu)
-    #M = 1
-    #OOQP{T}(V, A, C, q, b, g, N, M, L)
     OOQP(V, q; A=A, b=b, C=C, g=g)
 end
 
@@ -103,12 +89,8 @@ function OOQP(V, A, C, q, b, g, d, u)
     ig = findall(g .< Inf)
     Ce = [C[ig, :]; -Matrix{T}(I, N, N)[id, :]; Matrix{T}(I, N, N)[iu, :]]
     ge = [g[ig]; -d[id]; u[iu]]
-    #L = length(ig) + length(id) + length(iu)
-    #M = length(b)
-    #OOQP{T}(V, A, Ce, q, b, ge, N, M, L)
     OOQP(V, q; A=A, b=b, C=Ce, g=ge)
 end
-
 
 
 
@@ -120,33 +102,33 @@ end
 
 kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloat
 
-    maxIter::Int64         #700
+    maxIter::Int64      #777
     scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
-    tolMu::T        #1e-14  violation of the complementarity condition
-    tolR::T         #1e-14  norm(resid) <= tolR * norm(OOQP)
-    minPhi::T       #1e7    phi_min_history, not a foolproof test
+    tolMu::T            #2^-47 ≈ 7.1e-15  violation of the complementarity condition
+    tolR::T             #2^-37 ≈ 7.3e-12  norm(resid) <= tolR * norm(OOQP)
+    minPhi::T           #2^23 = 8388608 ≈ 1e7    phi_min_history, not a foolproof test
 
 see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
 """
 struct Settings{T<:AbstractFloat}
-    maxIter::Int64    #100
+    maxIter::Int64    #777
     scaleStep::T   # 0.99
-    tolMu::T   #1e-7
-    tolR::T   #1e-7
-    minPhi::T  #1e10
+    tolMu::T   #2^-47
+    tolR::T   #2^-37
+    minPhi::T  #2^23
 end
 
 Settings(; kwargs...) = Settings{Float64}(; kwargs...)
 
-function Settings{Float64}(; maxIter=700,
+function Settings{Float64}(; maxIter=777,
     scaleStep=0.99,
-    tolMu=2^-47,    #1e-14,  #2^-26,   #1e-7,
-    tolR=2^-37,    #1e-14,  #2^-26,   #1e-7,
+    tolMu=2^-47,
+    tolR=2^-37,
     minPhi=2^23)
     Settings{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
 
-function Settings{BigFloat}(; maxIter=700,
+function Settings{BigFloat}(; maxIter=777,
     scaleStep=0.99,
     tolMu=2^-87,
     tolR=2^-77,
@@ -157,7 +139,6 @@ end
 function Settings(Q::OOQP{T}; kwargs...) where {T}
     Settings{T}(; kwargs...)
 end
-
 
 
 """
@@ -196,7 +177,6 @@ function Solution(Q::OOQP{T}) where {T}
     s = ones(T, L)
     Solution(x, y, z, s)
 end
-
 
 
 struct Residuals{T<:AbstractFloat}
