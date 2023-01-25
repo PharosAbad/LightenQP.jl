@@ -1,7 +1,8 @@
 # Problem-Algorithm-Solver pattern
 
 """
-    
+
+        OOQP(V, A, C, q, b, g)
         OOQP(V, q::T; A=A, b=b, C=C, g=g) where T
 
 define the following convex quadratic programming problems (called OOQP)
@@ -11,13 +12,12 @@ define the following convex quadratic programming problems (called OOQP)
         s.t.   Ax=b ∈ R^{M}
                Cx≤g ∈ R^{L}
 ```
-default values: A = ones(1,N), b = [1],  C = -I, g = zeros(N). Which define a portfolio optimization without short-sale 
+default values for OOQP(V, q; kwargs...): A = ones(1,N), b = [1],  C = -I, g = zeros(N). Which define a portfolio optimization without short-sale 
 
 For portfolio optimization
 
     OOQP(V, q)                      : for no short-sale 
     OOQP(V, q, u)                   : for bounds 0 <= x <= u, and thus A = ones(1,N), b = [1],  C = [-I; I], g = [zeros(N); u]
-    OOQP(V, A, C, q, b, g, d, u)    : for OOQP + bounds d <= x <= u
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
@@ -80,6 +80,11 @@ function OOQP(V, q, u)
     OOQP(V, q; A=A, b=b, C=C, g=g)
 end
 
+function OOQP(V, A, C, q, b, g)
+    OOQP(V, q; A=A, b=b, C=C, g=g)
+end
+#=
+#OOQP + bounds d <= x <= u
 function OOQP(V, A, C, q, b, g, d, u)
     T = typeof(q).parameters[1]
     N::Int32 = length(q)
@@ -91,6 +96,7 @@ function OOQP(V, A, C, q, b, g, d, u)
     ge = [g[ig]; -d[id]; u[iu]]
     OOQP(V, q; A=A, b=b, C=Ce, g=ge)
 end
+=#
 
 
 

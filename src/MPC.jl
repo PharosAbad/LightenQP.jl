@@ -2,7 +2,7 @@
 
 """
 
-        solveOOQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T}; settings=Settings{T}()) where T
+        solveOOQP(V, q, A, b, C, g; settings)
         solveOOQP(Q::OOQP; settings=Settings())
 
 solving convex quadratic programming problems (QP) in the following form define by Q::OOQP
