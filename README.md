@@ -20,23 +20,23 @@ ___LightenQP.jl___
 $$
 \begin{array}
 [c]{cl}
-\min & \frac{1}{2}\mathbf{z}^{\prime}\mathbf{Vz}+\mathbf{z}^{\prime}%
+\min & \frac{1}{2}\mathbf{x}^{\prime}\mathbf{Vx}+\mathbf{x}^{\prime}%
 \mathbf{q}\\
-s.t. & \mathbf{Az}=\mathbf{b}\in\mathbb{R}^{M}\\
-& \mathbf{Cz}\leq\mathbf{g}\in\mathbb{R}^{L}
+s.t. & \mathbf{Ax}=\mathbf{b}\in\mathbb{R}^{M}\\
+& \mathbf{Cx}\leq\mathbf{g}\in\mathbb{R}^{L}
 \end{array}
 $$
 
-with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N}$. The general quadratic programming formulation solved by `LightenQP` is (`OOQP + d≤z≤u + h≤Cz`)
+with positive semi-definite symmetric matrix $\mathbf{V}\in\mathbb{R}^{N\times N}$. The general quadratic programming formulation solved by `LightenQP` is (`OOQP + d≤x≤u + h≤Cx`)
 
 $$
 \begin{array}
 [c]{cl}
-\min & \frac{1}{2}\mathbf{z}^{\prime}\mathbf{Vz}+\mathbf{z}^{\prime}
+\min & \frac{1}{2}\mathbf{x}^{\prime}\mathbf{Vx}+\mathbf{x}^{\prime}
 \mathbf{q}\\
-s.t. & \mathbf{Az}=\mathbf{b}\in\mathbb{R}^{M}\\
-& \mathbf{h}\leq\mathbf{Cz}\leq\mathbf{g}\in\mathbb{R}^{L}\\
-& \boldsymbol{d}\leq\mathbf{z}\leq\boldsymbol{u}\in\mathbb{R}^{N}
+s.t. & \mathbf{Ax}=\mathbf{b}\in\mathbb{R}^{M}\\
+& \mathbf{h}\leq\mathbf{Cx}\leq\mathbf{g}\in\mathbb{R}^{L}\\
+& \boldsymbol{d}\leq\mathbf{x}\leq\boldsymbol{u}\in\mathbb{R}^{N}
 \end{array}
 $$
 

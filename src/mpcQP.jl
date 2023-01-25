@@ -2,45 +2,45 @@
 
 """
 
-        mpcQP(V, q, A, b, C, g, d, u, h; settings)    :OOQP + 'd≤z≤u' + 'h≤Cz'
-        mpcQP(V, q, A, b, C, g, d, u; settings)       :OOQP + 'd≤z≤u'
-        mpcQP(V, q, C, g, d, u, h; settings)          :OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b'
+        mpcQP(V, q, A, b, C, g, d, u, h; settings)    :OOQP + 'd≤x≤u' + 'h≤Cx'
+        mpcQP(V, q, A, b, C, g, d, u; settings)       :OOQP + 'd≤x≤u'
+        mpcQP(V, q, C, g, d, u, h; settings)          :OOQP + 'd≤x≤u' + 'h≤Cx' - 'Ax=b'
         mpcQP(V, q, A, b, C, g; settings)             :OOQP
-        mpcQP(V, q, d, u; settings)                   :OOQP + 'd≤z≤u' - 'Az=b, Cz≤g'
+        mpcQP(V, q, d, u; settings)                   :OOQP + 'd≤x≤u' - 'Ax=b, Cx≤g'
         mpcQP(O::OOQP; settings)                      :OOQP
 
-wrapping `solveOOQP` for quadratic programming problems: `mpcQP(V, q, A, b, C, g, d, u, h)` for (OOQP + 'd≤z≤u' + 'h≤Cz')
+wrapping `solveOOQP` for quadratic programming problems: `mpcQP(V, q, A, b, C, g, d, u, h)` for (OOQP + 'd≤x≤u' + 'h≤Cx')
 
 ```math
-    min	(1/2)z′Vz+z′q
-    s.t.	Az=b∈R^{M}
-	        h≤Cz≤g∈R^{L}
-        	d≤z≤u∈R^{N}
+    min	(1/2)x′Vx+x′q
+    s.t.	Ax=b∈R^{M}
+	        h≤Cx≤g∈R^{L}
+        	d≤x≤u∈R^{N}
 ```
 
-`mpcQP(V, q, A, b, C, g, d, u)` for equality and inequality constraints, and lower and upper bounds (OOQP + 'd≤z≤u')
+`mpcQP(V, q, A, b, C, g, d, u)` for equality and inequality constraints, and lower and upper bounds (OOQP + 'd≤x≤u')
 
 ```math
-    min	(1/2)z′Vz+z′q
-    s.t.	Az=b∈R^{M}
-	        Cz≤g∈R^{L}
-	        d≤z≤u∈R^{N}
+    min	(1/2)x′Vx+x′q
+    s.t.	Ax=b∈R^{M}
+	        Cx≤g∈R^{L}
+	        d≤x≤u∈R^{N}
 ```
 
-`mpcQP(V, q, C, g, d, u, h)` for only inequality constraints, and lower and upper bounds (OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b')
+`mpcQP(V, q, C, g, d, u, h)` for only inequality constraints, and lower and upper bounds (OOQP + 'd≤x≤u' + 'h≤Cx' - 'Ax=b')
 
 ```math
-    min	(1/2)z′Vz+z′q
-    s.t.	h≤Cz≤g∈R^{L}
-        	d≤z≤u∈R^{N}
+    min	(1/2)x′Vx+x′q
+    s.t.	h≤Cx≤g∈R^{L}
+        	d≤x≤u∈R^{N}
 ```
 
 
-`mpcQP(V, q, d, u)` for only lower and upper bounds (OOQP + 'd≤z≤u' - 'Az=b, Cz≤g')
+`mpcQP(V, q, d, u)` for only lower and upper bounds (OOQP + 'd≤x≤u' - 'Ax=b, Cx≤g')
 
 ```math
-    min	(1/2)z′Vz+z′q
-    s.t.	d≤z≤u∈R^{N}
+    min	(1/2)x′Vx+x′q
+    s.t.	d≤x≤u∈R^{N}
 ```
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
 
@@ -63,7 +63,7 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix
 end
 
 
-#OOQP + 'd≤z≤u'
+#OOQP + 'd≤x≤u'
 function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector{T},
     d::Vector{T}, u::Vector{T}; settings=Settings{T}()) where {T}
 
@@ -80,7 +80,7 @@ function mpcQP(V::Matrix{T}, q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix
 end
 
 
-#OOQP + 'd≤z≤u' + 'h≤Cz' - 'Az=b'
+#OOQP + 'd≤x≤u' + 'h≤Cx' - 'Ax=b'
 function mpcQP(V::Matrix{T}, q::Vector{T}, C::Matrix{T}, g::Vector{T},
     d::Vector{T}, u::Vector{T}, h::Vector{T}; settings=Settings{T}()) where {T}
 
@@ -111,7 +111,7 @@ function mpcQP(O::OOQP{T}; settings=Settings{T}()) where {T}
 end
 
 
-#OOQP + 'd≤z≤u' - 'Az=b, Cz≤g'
+#OOQP + 'd≤x≤u' - 'Ax=b, Cx≤g'
 function mpcQP(V::Matrix{T}, q::Vector{T}, d::Vector{T}, u::Vector{T}; settings=Settings{T}()) where {T}
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
