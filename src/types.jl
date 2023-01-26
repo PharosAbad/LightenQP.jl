@@ -83,7 +83,7 @@ end
 function OOQP(V, A, C, q, b, g)
     OOQP(V, q; A=A, b=b, C=C, g=g)
 end
-#=
+
 #OOQP + bounds d <= x <= u
 function OOQP(V, A, C, q, b, g, d, u)
     T = typeof(q).parameters[1]
@@ -96,7 +96,7 @@ function OOQP(V, A, C, q, b, g, d, u)
     ge = [g[ig]; -d[id]; u[iu]]
     OOQP(V, q; A=A, b=b, C=Ce, g=ge)
 end
-=#
+
 
 
 
