@@ -147,6 +147,8 @@ function Settings(Q::OOQP{T}; kwargs...) where {T}
 end
 
 
+
+
 """
     
     struct Solution
@@ -183,6 +185,8 @@ function Solution(Q::OOQP{T}) where {T}
     s = ones(T, L)
     Solution(x, y, z, s)
 end
+
+
 
 
 struct Residuals{T<:AbstractFloat}

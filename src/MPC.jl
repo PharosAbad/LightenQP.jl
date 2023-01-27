@@ -2,8 +2,8 @@
 
 """
 
-        solveOOQP(V, q, A, b, C, g; settings)
         solveOOQP(Q::OOQP; settings=Settings())
+        solveOOQP(V, q, A, b, C, g; settings)
 
 solving convex quadratic programming problems (QP) in the following form define by Q::OOQP
 

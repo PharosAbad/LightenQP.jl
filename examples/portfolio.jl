@@ -3,8 +3,10 @@
 	min   (1/2)z′Vz -z′μ
 	s.t.   z′1=1 ,  0≤z≤u
 =#
+# User Guides: https://github.com/PharosAbad/LightenQP.jl/wiki/User-Guides#portfolio-selection-1
 
 using LightenQP
+using LinearAlgebra
 
 V = [1/100 1/80 1/100
      1/80 1/16 1/40
@@ -21,6 +23,13 @@ Q = OOQP(V, -E, u)       #OOQP + bounds 0 <= x <= u
 #settings = Settings()
 x, status = solveOOQP(Q) #solve by Algorithm MPC (Mehrotra Predictor-Corrector)
 
+#v1.0.1
+O = OOQP(V, E, u)
+y, statusy = fPortfolio(O; L=1.0)
+norm(x.x-y.x, Inf)  #0
+
+
+
 #=
 using EfficientFrontier
 P = Problem(E, V, u)
@@ -29,8 +38,9 @@ aCL = EfficientFrontier.ECL(P; numSettings=nS)
 aEF = eFrontier(aCL, P)
 
 mu = x.x'*E
-z = ePortfolio(mu, aEF)
+z = ePortfolio(aEF, mu)
 x.x - z
 =#
+
 
 
