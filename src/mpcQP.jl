@@ -126,8 +126,6 @@ end
 
 
 
-
-
 """
         mpcLP(q, A, b, C, g, d, u; settings, min=true)
         mpcLP(q, A, b, C, g; settings, min=true)
@@ -188,8 +186,6 @@ function mpcLP(q::Vector{T}, A::Matrix{T}, b::Vector{T}, C::Matrix{T}, g::Vector
 end
 
 
-
-
 """
 
         x, status = fPortfolio(O::OOQP; settings, L::T=0.0)
@@ -226,7 +222,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
         if mu1 > muH
             mu1 = muH
             if isfinite(mu)
-                @warn "mu is higher than the highest mu_H, compute at mu_H"
+                @warn "mu is higher than the highest muH, compute at muH" mu muH
             end
         else
             #LMFP (Lowest Mean Frontier Portfolio)
@@ -240,7 +236,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
             if mu1 < muL
                 mu1 = muL
                 if isfinite(mu)
-                    @warn "mu is lower than the lowest mu_L, compute at mu_L"
+                    @warn "mu is lower than the lowest muL, compute at muL" mu muL
                 end
             end
         end
@@ -253,20 +249,6 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
     Q = OOQP{T}(V, Aq, C, qq, bq, g, N, M, L)
     return solveOOQP(Q; settings=settings)
 end
-
-
-function fPortfolio0(O::OOQP{T}, mu; settings=Settings{T}()) where {T}
-    #FP(mu=mu)
-    (; V, A, C, q, b, g, N, M, L) = O
-    #@ given mu
-    qq = zeros(T, N)
-    Aq = [A; q']
-    bq = [b; mu]
-    M += 1
-    Q = OOQP{T}(V, Aq, C, qq, bq, g, N, M, L)
-    return solveOOQP(Q; settings=settings)
-end
-
 
 function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
     #FP(L=L)
@@ -301,41 +283,4 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
 
 end
 
-function ePortfolio0(O::OOQP{T}; settings=Settings{T}(), mu::T=-Inf, Le::T=0.0) where {T}
-    #mu=-Inf => @ given Le; mu=+Inf => HVEP; mu=mu0 => @ given mu0
-    (; V, A, C, q, b, g, N, M, L) = O
-    #=Aq = A
-    bq = b
-    qq = zeros(T, N)
-    if mu == Inf  #EfficientFrontier @ L=1
-        qq = -q
-    elseif mu != -Inf   #given mu
-        Aq = [A; q']
-        bq = [b; mu]
-        M += 1
-    end =#
-    if mu == -Inf  #EfficientFrontier by given Le
-        qq = -Le * q
-        Q = OOQP{T}(V, A, C, qq, b, g, N, M, L)
-        return solveOOQP(Q; settings=settings)
-    end
 
-    mu1 = mu
-    if mu == Inf   #HVEP (Highest Variance Efficient Portfolio)
-        #find the Highest mu
-        x, status = mpcLP(q, A, b, C, g; settings=settings, min=false)
-        if status == 0
-            error("HVEP: infeasible")
-        elseif status < 0
-            error("HVEP: not converged")
-        end
-        mu1 = x.x' * q
-    end
-    #@ given mu1
-    qq = zeros(T, N)
-    Aq = [A; q']
-    bq = [b; mu1]
-    M += 1
-    Q = OOQP{T}(V, Aq, C, qq, bq, g, N, M, L)
-    return solveOOQP(Q; settings=settings)
-end

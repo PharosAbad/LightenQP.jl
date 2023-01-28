@@ -128,8 +128,8 @@ Settings(; kwargs...) = Settings{Float64}(; kwargs...)
 
 function Settings{Float64}(; maxIter=777,
     scaleStep=0.99,
-    tolMu=2^-47,
-    tolR=2^-37,
+    tolMu=2^-52,
+    tolR=2^-47,
     minPhi=2^23)
     Settings{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
 end
