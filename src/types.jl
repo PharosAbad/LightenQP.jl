@@ -110,6 +110,7 @@ kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloa
 
     maxIter::Int64      #777
     scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
+    tol::T              #2^-26 ≈ 1.5e-8   general (not use in OOQP solver)
     tolMu::T            #2^-47 ≈ 7.1e-15  violation of the complementarity condition
     tolR::T             #2^-37 ≈ 7.3e-12  norm(resid) <= tolR * norm(OOQP)
     minPhi::T           #2^23 = 8388608 ≈ 1e7    phi_min_history, not a foolproof test
@@ -117,29 +118,32 @@ kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloa
 see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
 """
 struct Settings{T<:AbstractFloat}
-    maxIter::Int64    #777
-    scaleStep::T   # 0.99
-    tolMu::T   #2^-47
-    tolR::T   #2^-37
-    minPhi::T  #2^23
+    maxIter::Int64  #777
+    scaleStep::T    # 0.99
+    tol::T          #2^-26
+    tolMu::T        #2^-47
+    tolR::T         #2^-37
+    minPhi::T       #2^23
 end
 
 Settings(; kwargs...) = Settings{Float64}(; kwargs...)
 
 function Settings{Float64}(; maxIter=777,
     scaleStep=0.99,
+    tol=2^-26,
     tolMu=2^-52,
     tolR=2^-47,
     minPhi=2^23)
-    Settings{Float64}(maxIter, scaleStep, tolMu, tolR, minPhi)
+    Settings{Float64}(maxIter, scaleStep, tol, tolMu, tolR, minPhi)
 end
 
 function Settings{BigFloat}(; maxIter=777,
     scaleStep=0.99,
+    tol=2^-76,
     tolMu=2^-87,
     tolR=2^-77,
     minPhi=2^23)
-    Settings{BigFloat}(maxIter, scaleStep, tolMu, tolR, minPhi)
+    Settings{BigFloat}(maxIter, scaleStep, tol, tolMu, tolR, minPhi)
 end
 
 function Settings(Q::OOQP{T}; kwargs...) where {T}

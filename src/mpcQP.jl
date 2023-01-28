@@ -207,7 +207,7 @@ See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`Solution`](@ref), [`Settings`](@
 function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where {T}
     #FP(mu=mu)
     (; V, A, C, q, b, g, N, M, L) = O
-
+    tol = settings.tol
     mu1 = mu
     if check
         #make sure mu is feasible, otherwise, change mu to be the highest or lowest
@@ -219,7 +219,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
             error("mu for Highest Mean Frontier Portfolio: not converged")
         end
         muH = xH.x' * q
-        if mu1 > muH
+        if mu1 - muH > tol
             mu1 = muH
             if isfinite(mu)
                 @warn "mu is higher than the highest muH, compute at muH" mu muH
@@ -233,7 +233,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
                 error("mu for Lowest Mean Frontier Portfolio: not converged")
             end
             muL = xL.x' * q
-            if mu1 < muL
+            if muL - mu1 > tol
                 mu1 = muL
                 if isfinite(mu)
                     @warn "mu is lower than the lowest muL, compute at muL" mu muL
