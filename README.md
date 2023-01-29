@@ -43,7 +43,7 @@ $$
 ## Features
 
 * __Light Weight__: 100+ lines Julia code. Which follows closely the the implementation of the C/C++ solver [OOQP](https://github.com/emgertz/OOQP)
-* __Fast__: beat [Clarabel](https://github.com/oxfordcontrol/Clarabel.jl) for efficient portfolio seeking (test at $N = 14$ and $N = 263$ with lower and upper bounds. For SP500 data, roughly the same speed)
+* __Fast__:  [Speed and Accuracy](https://github.com/PharosAbad/LightenQP.jl/wiki/Speed-and-Accuracy)
 * __Versatile__: solving a general quadratic programming problem mentioned above. $\mathbf{V}$ can be positive definite or positive semi-definite
 * __Open Source__: Our code is available on [GitHub](https://github.com/PharosAbad/LightenQP.jl) and distributed under the MIT License
 * __Arbitrary Precision Arithmetic__: fully support for `BigFloat`
