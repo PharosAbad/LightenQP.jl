@@ -6,7 +6,10 @@ using LightenQP
 using TranscodingStreams, CodecXz, Serialization, Downloads
 
 #download the online data
-xzFile = Downloads.download("https://github.com/PharosAbad/PharosAbad.github.io/raw/master/files/sp500.jls.xz")
+xzFile = "/tmp/sp500.jls.xz"
+if !isfile(xzFile)
+    Downloads.download("https://github.com/PharosAbad/PharosAbad.github.io/raw/master/files/sp500.jls.xz", xzFile)
+end
 io = open(xzFile)
 io = TranscodingStream(XzDecompressor(), io)
 E = deserialize(io)

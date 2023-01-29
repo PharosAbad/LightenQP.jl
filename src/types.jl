@@ -132,7 +132,7 @@ function Settings{Float64}(; maxIter=777,
     scaleStep=0.99,
     tol=2^-26,
     tolMu=2^-52,
-    tolR=2^-47,
+    tolR=2^-49,
     minPhi=2^23)
     Settings{Float64}(maxIter, scaleStep, tol, tolMu, tolR, minPhi)
 end
