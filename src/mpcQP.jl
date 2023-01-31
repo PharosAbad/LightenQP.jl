@@ -258,7 +258,7 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
         Q = OOQP{T}(V, A, C, qq, b, g, N, M, O.L)
         return solveOOQP(Q; settings=settings)
     end
-    if L == -Inf  #LMFP (Lowest Mean Frontier Portfolio)
+    #= if L == -Inf  #LMFP (Lowest Mean Frontier Portfolio)
         x, status = mpcLP(q, A, b, C, g; settings=settings) #find the Lowest mu
         if status == 0
             error("mu for Lowest Mean Frontier Portfolio: infeasible")
@@ -272,7 +272,15 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
         elseif status < 0
             error("mu for Highest Mean Frontier Portfolio: not converged")
         end
+    end =#
+    min = L == Inf ? false : true
+    x, status = mpcLP(q, A, b, C, g; settings=settings, min=min)
+    if status == 0
+        error("mu for Highest/Lowest Mean Frontier Portfolio: infeasible")
+    elseif status < 0
+        error("mu for Highest/Lowest Mean Frontier Portfolio: not converged")
     end
+
     mu = x.x' * q
     qq = zeros(T, N)
     Aq = [A; q']

@@ -94,8 +94,17 @@ end
 
 function cmpSA(ds::Symbol)
     P = testData(ds)
-    aCL = EfficientFrontier.ECL(P)
+    println("--- Starting EfficientFrontier ---")
+    t0 = time()
+    ts = @elapsed aCL = EfficientFrontier.ECL(P)
     aEF = eFrontier(aCL, P)
+    t1 = time()
+    println("1st run, EfficientFrontier:  ", t1 - t0, "  seconds", "\n   aCL:  ", ts, "  seconds")
+    t0 = time()
+    ts = @elapsed aCL = EfficientFrontier.ECL(P)
+    aEF = eFrontier(aCL, P)
+    t1 = time()
+    println("2nd run, EfficientFrontier:  ", t1 - t0, "  seconds", "\n   aCL:  ", ts, "  seconds")
 
     QPsolver = :LightenQP
     Tl, Al, Ol, Sl = SpeedAccuracy(aEF, P, QPsolver)
@@ -104,31 +113,37 @@ function cmpSA(ds::Symbol)
     QPsolver = :Clarabel
     Tc, Ac, Oc, Sc = SpeedAccuracy(aEF, P, QPsolver)
 
-    #status
-    println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
-    display(Sl)
-    display(So)
-    display(Sc)
-    #Accuracy
-    println("\n------- Accuracy -------LightenQP/OSQP/Clarabel")
-    display(round.(Al, sigdigits=3))
-    display(round.(Ao, sigdigits=3))
-    display(round.(Ac, sigdigits=3))
-    #Speed
-    println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel")
-    display(round.(Tl, sigdigits=3))
-    display(round.(To, sigdigits=3))
-    display(round.(Tc, sigdigits=3))
-    #Objective function
-    println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel")
-    display(round.(Ol, sigdigits=3))
-    display(round.(Oo, sigdigits=3))
-    display(round.(Oc, sigdigits=3))
-    return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
+    redirect_stdio(stdout="stdout.txt") do
+        #status
+        println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
+        show(stdout, "text/plain", Sl); println("")
+        show(stdout, "text/plain", So); println("")
+        show(stdout, "text/plain", Sc); println("")
+        #Accuracy
+        println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Al, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ao, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ac, sigdigits=3)); println("")
+        #Speed
+        println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Tl, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(To, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Tc, sigdigits=3)); println("")
+        #Objective function
+        println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Ol, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Oo, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Oc, sigdigits=3)); println("")
+    end
+    #redirect_stdio()
+    #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
+    return nothing
 end
 
 
-Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc = cmpSA(:Ungil)
+#Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc = cmpSA(:Ungil)
+#cmpSA(:Ungil)
 #Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc = cmpSA(:SP500)
+cmpSA(:SP500)
 
 nothing

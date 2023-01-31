@@ -111,8 +111,8 @@ kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloa
     maxIter::Int64      #777
     scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
     tol::T              #2^-26 ≈ 1.5e-8   general (not use in OOQP solver)
-    tolMu::T            #2^-47 ≈ 7.1e-15  violation of the complementarity condition
-    tolR::T             #2^-37 ≈ 7.3e-12  norm(resid) <= tolR * norm(OOQP)
+    tolMu::T            #2^-52 ≈ 2.2e-16  violation of the complementarity condition
+    tolR::T             #2^-49 ≈ 1.8e-15  norm(resid) <= tolR * norm(OOQP)
     minPhi::T           #2^23 = 8388608 ≈ 1e7    phi_min_history, not a foolproof test
 
 see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
