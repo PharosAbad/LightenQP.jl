@@ -140,10 +140,102 @@ function cmpSA(ds::Symbol)
     return nothing
 end
 
+function SpeedAccuracyL(aEF, P, aCL, QPsolver, M=16)
+    V = P.V
+    N = length(aEF.mu) - 1
+    T = zeros(N, M)     #time used, for speed
+    A = zeros(N, M)     #Accuracy
+    O = zeros(N, M)     #Objective function
+    S = trues(N, M)     #Solution status
+    for k in 1:N
+        i = aEF.ic[k]
+        t = aCL[i]
+        for m = 1:M
+            #mu = ((M + 1 - m) * aEF.mu[k] + (m - 1) * aEF.mu[k+1]) / M
+            L = ((M + 1 - m) * t.L1 + (m - 1) * t.L0) / M
+            #z = ePortfolio(aEF, mu)
+            z = ePortfolio(aCL, P, L)
+            if QPsolver == :LightenQP
+                #ts = @elapsed y, status = fPortfolio(P, mu; check=false)
+                ts = @elapsed y, status = fPortfolio(OOQP(P); L)    #fPortfolio(P; L) use active-set numerical solver
+                st = status > 0
+            elseif QPsolver == :OSQP
+                #ts = @elapsed y = OpSpQP(P, mu)
+                ts = @elapsed y = OpSpQP(P; L)
+                st = y.info.status_val == 1
+            elseif QPsolver == :Clarabel
+                #ts = @elapsed y = ClarabelQP(P, mu)
+                ts = @elapsed y = ClarabelQP(P; L)
+                st = Int(y.status) == 1
+            else
+                error("Unknown QP solver")
+            end
+            S[k, m] = st
+            T[k, m] = ts
+            A[k, m] = norm(y.x - z, Inf)
+            O[k, m] = sqrt(y.x' * V * y.x) - sqrt(z' * V * z)
+        end
+    end
 
-#Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc = cmpSA(:Ungil)
-#cmpSA(:Ungil)
-#Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc = cmpSA(:SP500)
-cmpSA(:SP500)
+    return T, A, O, S
+end
+
+
+function cmpSA_L(ds::Symbol)
+    P = testData(ds)
+    println("--- Starting EfficientFrontier ---")
+    t0 = time()
+    ts = @elapsed aCL = EfficientFrontier.ECL(P)
+    aEF = eFrontier(aCL, P)
+    t1 = time()
+    println("1st run, EfficientFrontier:  ", t1 - t0, "  seconds", "\n   aCL:  ", ts, "  seconds")
+    t0 = time()
+    ts = @elapsed aCL = EfficientFrontier.ECL(P)
+    aEF = eFrontier(aCL, P)
+    t1 = time()
+    println("2nd run, EfficientFrontier:  ", t1 - t0, "  seconds", "\n   aCL:  ", ts, "  seconds")
+
+    QPsolver = :LightenQP
+    Tl, Al, Ol, Sl = SpeedAccuracyL(aEF, P, aCL, QPsolver)
+    QPsolver = :OSQP
+    To, Ao, Oo, So = SpeedAccuracyL(aEF, P, aCL, QPsolver)
+    QPsolver = :Clarabel
+    Tc, Ac, Oc, Sc = SpeedAccuracyL(aEF, P, aCL, QPsolver)
+
+    redirect_stdio(stdout="stdoutL.txt") do
+        #status
+        println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
+        show(stdout, "text/plain", Sl); println("")
+        show(stdout, "text/plain", So); println("")
+        show(stdout, "text/plain", Sc); println("")
+        #Accuracy
+        println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Al, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ao, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ac, sigdigits=3)); println("")
+        #Speed
+        println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Tl, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(To, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Tc, sigdigits=3)); println("")
+        #Objective function
+        println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
+        show(stdout, "text/plain", round.(Ol, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Oo, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Oc, sigdigits=3)); println("")
+    end
+    #redirect_stdio()
+    #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
+    return nothing
+end
+
+
+#FP(mu=mu0), Az=b contains z′E=μ, objective function L=0
+cmpSA(:Ungil)
+#cmpSA(:SP500)
+
+#FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
+cmpSA_L(:Ungil)
+#cmpSA_L(:SP500)
 
 nothing
