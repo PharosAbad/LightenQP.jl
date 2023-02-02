@@ -231,11 +231,21 @@ end
 
 
 #FP(mu=mu0), Az=b contains z′E=μ, objective function L=0
-cmpSA(:Ungil)
-#cmpSA(:SP500)
+#cmpSA(:Ungil)
+cmpSA(:SP500)
 
 #FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
-cmpSA_L(:Ungil)
-#cmpSA_L(:SP500)
+#cmpSA_L(:Ungil)
+cmpSA_L(:SP500)
 
 nothing
+
+#=
+Remark: 
+
+* SP500 mu version: Solution status for the case in LightenQP that is "infeasible" is due to the `mu` identify by LightenQP is 2.27e-14 smaller than that given by `EfficientFrontier`.  
+You will see that the corresponding  Accuracy  is  5.75e-15 (the portfolio weights z relative to the true value z0, reported by norm(z-z0, Inf) ).
+
+* OSQP is very good, when L is used. Accuracy 1.28e-10 (SP500 and Ungil), very good (deteriorate near GMVP ); speed 0.0751 (Ungil) and 0.0909 (SP500), fastest, no speed down at HMEP; 
+  objective 7.53e-14 (SP500 and Ungil), very good
+=#
