@@ -254,7 +254,11 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
     #FP(L=L)
     (; V, A, C, q, b, g, N, M) = O
     if isfinite(L)  #@ given L
-        qq = -L * q
+        if L == 0
+            qq = zeros(T, N)
+        else
+            qq = -L * q
+        end
         Q = OOQP{T}(V, A, C, qq, b, g, N, M, O.L)
         return solveOOQP(Q; settings=settings)
     end
