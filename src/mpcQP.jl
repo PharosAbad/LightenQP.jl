@@ -254,7 +254,7 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
     #FP(L=L)
     (; V, A, C, q, b, g, N, M) = O
     if isfinite(L)  #@ given L
-        if L == 0
+        if L == 0.0
             qq = zeros(T, N)
         else
             qq = -L * q
