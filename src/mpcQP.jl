@@ -207,7 +207,7 @@ See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`Solution`](@ref), [`Settings`](@
 function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where {T}
     #FP(mu=mu)
     (; V, A, C, q, b, g, N, M, L) = O
-    tol = settings.tol
+    #tol = settings.tol
     mu1 = mu
     if check
         #make sure mu is feasible, otherwise, change mu to be the highest or lowest
@@ -219,7 +219,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
             error("mu for Highest Mean Frontier Portfolio: not converged")
         end
         muH = xH.x' * q
-        if mu1 - muH > tol
+        if mu1 - muH > 0 #tol
             mu1 = muH
             if isfinite(mu)
                 @warn "mu is higher than the highest muH, compute at muH" mu muH
@@ -233,7 +233,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
                 error("mu for Lowest Mean Frontier Portfolio: not converged")
             end
             muL = xL.x' * q
-            if muL - mu1 > tol
+            if muL - mu1 > 0 #tol
                 mu1 = muL
                 if isfinite(mu)
                     @warn "mu is lower than the lowest muL, compute at muL" mu muL
@@ -250,6 +250,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
     return solveOOQP(Q; settings=settings)
 end
 
+
 function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
     #FP(L=L)
     (; V, A, C, q, b, g, N, M) = O
@@ -262,21 +263,8 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
         Q = OOQP{T}(V, A, C, qq, b, g, N, M, O.L)
         return solveOOQP(Q; settings=settings)
     end
-    #= if L == -Inf  #LMFP (Lowest Mean Frontier Portfolio)
-        x, status = mpcLP(q, A, b, C, g; settings=settings) #find the Lowest mu
-        if status == 0
-            error("mu for Lowest Mean Frontier Portfolio: infeasible")
-        elseif status < 0
-            error("mu for Lowest Mean Frontier Portfolio: not converged")
-        end
-    elseif L == Inf   #HMFP (Highest Mean Frontier Portfolio)
-        x, status = mpcLP(q, A, b, C, g; settings=settings, min=false)  #find the Highest mu
-        if status == 0
-            error("mu for Highest Mean Frontier Portfolio: infeasible")
-        elseif status < 0
-            error("mu for Highest Mean Frontier Portfolio: not converged")
-        end
-    end =#
+    
+    #L == ±Inf, using LP to find HMEP LMEP
     min = L == Inf ? false : true
     x, status = mpcLP(q, A, b, C, g; settings=settings, min=min)
     if status == 0

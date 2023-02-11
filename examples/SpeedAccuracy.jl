@@ -65,12 +65,15 @@ function SpeedAccuracy(aEF, P, QPsolver, M=16)
     A = zeros(N, M)     #Accuracy
     O = zeros(N, M)     #Objective function
     S = trues(N, M)     #Solution status
+    check = true
     for k in 1:N
         for m = 1:M
             mu = ((M + 1 - m) * aEF.mu[k] + (m - 1) * aEF.mu[k+1]) / M
             z = ePortfolio(aEF, mu)
             if QPsolver == :LightenQP
-                ts = @elapsed y, status = fPortfolio(P, mu; check=false)
+                #ts = @elapsed y, status = fPortfolio(P, mu; check=false)
+                ts = @elapsed y, status = fPortfolio(P, mu; check=check)
+                check = false
                 st = status > 0
             elseif QPsolver == :OSQP
                 ts = @elapsed y = OpSpQP(P, mu)
@@ -116,24 +119,36 @@ function cmpSA(ds::Symbol)
     redirect_stdio(stdout="stdout.txt") do
         #status
         println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
-        show(stdout, "text/plain", Sl); println("")
-        show(stdout, "text/plain", So); println("")
-        show(stdout, "text/plain", Sc); println("")
+        show(stdout, "text/plain", Sl)
+        println("")
+        show(stdout, "text/plain", So)
+        println("")
+        show(stdout, "text/plain", Sc)
+        println("")
         #Accuracy
         println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Al, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Ao, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Ac, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Al, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ao, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ac, sigdigits=3))
+        println("")
         #Speed
         println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Tl, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(To, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Tc, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Tl, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(To, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Tc, sigdigits=3))
+        println("")
         #Objective function
         println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Ol, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Oo, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Oc, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ol, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oo, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oc, sigdigits=3))
+        println("")
     end
     #redirect_stdio()
     #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
@@ -205,30 +220,41 @@ function cmpSA_L(ds::Symbol)
     redirect_stdio(stdout="stdoutL.txt") do
         #status
         println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
-        show(stdout, "text/plain", Sl); println("")
-        show(stdout, "text/plain", So); println("")
-        show(stdout, "text/plain", Sc); println("")
+        show(stdout, "text/plain", Sl)
+        println("")
+        show(stdout, "text/plain", So)
+        println("")
+        show(stdout, "text/plain", Sc)
+        println("")
         #Accuracy
         println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Al, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Ao, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Ac, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Al, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ao, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ac, sigdigits=3))
+        println("")
         #Speed
         println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Tl, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(To, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Tc, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Tl, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(To, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Tc, sigdigits=3))
+        println("")
         #Objective function
         println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
-        show(stdout, "text/plain", round.(Ol, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Oo, sigdigits=3)); println("")
-        show(stdout, "text/plain", round.(Oc, sigdigits=3)); println("")
+        show(stdout, "text/plain", round.(Ol, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oo, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oc, sigdigits=3))
+        println("")
     end
     #redirect_stdio()
     #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
     return nothing
 end
-
 
 #FP(mu=mu0), Az=b contains z′E=μ, objective function L=0
 #cmpSA(:Ungil)
@@ -236,16 +262,16 @@ cmpSA(:SP500)
 
 #FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
 #cmpSA_L(:Ungil)
-cmpSA_L(:SP500)
+#cmpSA_L(:SP500)
 
 nothing
+
 
 #=
 Remark: 
 
-* SP500 mu version: Solution status for the case in LightenQP that is "infeasible" is due to the `mu` identify by LightenQP is 2.27e-14 smaller than that given by `EfficientFrontier`.  
-You will see that the corresponding  Accuracy  is  5.75e-15 (the portfolio weights z relative to the true value z0, reported by norm(z-z0, Inf) ).
+* OSQP is dangerous when mu version is computed, low accuracy, volatile speed (fastest near LMEP, but slowest near HMEP, Highest Mean Efficient Portfolio)
 
-* OSQP is very good, when L is used. Accuracy 1.28e-10 (SP500 and Ungil), very good (deteriorate near GMVP ); speed 0.0751 (Ungil) and 0.0909 (SP500), fastest, no speed down at HMEP; 
+* OSQP is very good, when L is used. Accuracy 1.28e-10 (SP500 and Ungil), very good (deteriorate near LMEP ); speed 0.0751 (Ungil) and 0.0909 (SP500), fastest, no speed down at HMEP; 
   objective 7.53e-14 (SP500 and Ungil), very good
 =#
