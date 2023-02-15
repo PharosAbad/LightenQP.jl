@@ -2,8 +2,8 @@
 
 """
 
-        OOQP(V, A, C, q, b, g)
-        OOQP(V, q::T; A=A, b=b, C=C, g=g) where T
+        OOQP(V, A, C, q::Vector{T}, b, g)  where T
+        OOQP(V, q::Vector{T}; A=A, b=b, C=C, g=g) where T
 
 define the following convex quadratic programming problems (called OOQP)
 
@@ -37,13 +37,13 @@ end
 
 OOQP(args...) = OOQP{Float64}(args...)
 
-function OOQP(V, q;
+function OOQP(V, q::Vector{T};
     A=ones(1, length(q)),
     b=ones(1),
     C=-Matrix(I, length(q), length(q)),
-    g=zeros(length(q)))
+    g=zeros(length(q))) where {T}
 
-    T = typeof(q).parameters[1]
+    #T = typeof(q).parameters[1]
     N::Int32 = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
 
@@ -59,7 +59,7 @@ function OOQP(V, q;
     L::Int32 = length(gb)
     (M, N) == size(A) || throw(DimensionMismatch("incompatible dimension: A"))
     (L, N) == size(Cb) || throw(DimensionMismatch("incompatible dimension: C"))
-    
+
     OOQP{T}(Vs,
         convert(Matrix{T}, copy(A)),   #make a copy, just in case it is modified somewhere
         convert(Matrix{T}, Cb),
@@ -68,8 +68,8 @@ function OOQP(V, q;
         convert(Vector{T}, gb), N, M, L)
 end
 
-function OOQP(V, q, u)
-    T = typeof(q).parameters[1]
+function OOQP(V, q::Vector{T}, u) where {T}
+    #T = typeof(q).parameters[1]
     N::Int32 = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
     A = ones(T, 1, N)
@@ -85,8 +85,8 @@ function OOQP(V, A, C, q, b, g)
 end
 
 #OOQP + bounds d <= x <= u
-function OOQP(V, A, C, q, b, g, d, u)
-    T = typeof(q).parameters[1]
+function OOQP(V, A, C, q::Vector{T}, b, g, d, u) where {T}
+    #T = typeof(q).parameters[1]
     N::Int32 = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
     id = findall(d .> -Inf)
@@ -96,8 +96,6 @@ function OOQP(V, A, C, q, b, g, d, u)
     ge = [g[ig]; -d[id]; u[iu]]
     OOQP(V, q; A=A, b=b, C=Ce, g=ge)
 end
-
-
 
 
 """
@@ -189,8 +187,6 @@ function Solution(Q::OOQP{T}) where {T}
     s = ones(T, L)
     Solution(x, y, z, s)
 end
-
-
 
 
 struct Residuals{T<:AbstractFloat}

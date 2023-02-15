@@ -262,7 +262,7 @@ cmpSA(:SP500)
 
 #FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
 #cmpSA_L(:Ungil)
-#cmpSA_L(:SP500)
+cmpSA_L(:SP500)
 
 nothing
 
