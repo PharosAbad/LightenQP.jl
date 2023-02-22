@@ -30,7 +30,7 @@ function testData(ds::Symbol)
 
         P = Problem(E, V, u, d, G, g, A, b)
     elseif ds == :SP500
-        xzFile = "/tmp/sp500.jls.xz"
+        xzFile = joinpath(tempdir(),"sp500.jls.xz") #xzFile = "/tmp/sp500.jls.xz"
         if !isfile(xzFile)
             Downloads.download("https://github.com/PharosAbad/PharosAbad.github.io/raw/master/files/sp500.jls.xz", xzFile)
         end
