@@ -12,11 +12,11 @@ define the following convex quadratic programming problems (called OOQP)
         s.t.   Ax=b ∈ R^{M}
                Cx≤g ∈ R^{L}
 ```
-default values for OOQP(V, q; kwargs...): A = ones(1,N), b = [1],  C = -I, g = zeros(N). Which define a portfolio optimization without short-sale 
+default values for OOQP(V, q; kwargs...): A = ones(1,N), b = [1],  C = -I, g = zeros(N). Which define a portfolio optimization without short-sale
 
 For portfolio optimization
 
-    OOQP(V, q)                      : for no short-sale 
+    OOQP(V, q)                      : for no short-sale
     OOQP(V, q, u)                   : for bounds 0 <= x <= u, and thus A = ones(1,N), b = [1],  C = [-I; I], g = [zeros(N); u]
 
 See [`Documentation for LightenQP.jl`](https://github.com/PharosAbad/LightenQP.jl/wiki)
@@ -30,21 +30,21 @@ struct OOQP{T<:AbstractFloat}
     q::Vector{T}
     b::Vector{T}
     g::Vector{T}
-    N::Int32
-    M::Int32
-    L::Int32
+    N::Int
+    M::Int
+    L::Int
 end
 
 OOQP(args...) = OOQP{Float64}(args...)
 
-function OOQP(V, q::Vector{T};
-    A=ones(1, length(q)),
+function OOQP(V, q::Vector{T}; N = length(q),
+    A=ones(1, N),
     b=ones(1),
-    C=-Matrix(I, length(q), length(q)),
-    g=zeros(length(q))) where {T}
+    C=-Matrix(I, N, N),
+    g=zeros(N)) where {T}
 
     #T = typeof(q).parameters[1]
-    N::Int32 = length(q)
+    #N = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
 
     qq = copy(vec(q))     #make sure vector and a new copy
@@ -55,8 +55,8 @@ function OOQP(V, q::Vector{T};
     gb = g[ik]
     Cb = C[ik, :]
 
-    M::Int32 = length(b)
-    L::Int32 = length(gb)
+    M = length(b)
+    L = length(gb)
     (M, N) == size(A) || throw(DimensionMismatch("incompatible dimension: A"))
     (L, N) == size(Cb) || throw(DimensionMismatch("incompatible dimension: C"))
 
@@ -70,7 +70,7 @@ end
 
 function OOQP(V, q::Vector{T}, u) where {T}
     #T = typeof(q).parameters[1]
-    N::Int32 = length(q)
+    N = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
     A = ones(T, 1, N)
     b = ones(T, 1)
@@ -87,7 +87,7 @@ end
 #OOQP + bounds d <= x <= u
 function OOQP(V, A, C, q::Vector{T}, b, g, d, u) where {T}
     #T = typeof(q).parameters[1]
-    N::Int32 = length(q)
+    N = length(q)
     (N, N) == size(V) || throw(DimensionMismatch("incompatible dimension: V"))
     id = findall(d .> -Inf)
     iu = findall(u .< Inf)
@@ -152,7 +152,7 @@ end
 
 
 """
-    
+
     struct Solution
 
 Solution strcture to the following convex quadratic programming problems (called OOQP)

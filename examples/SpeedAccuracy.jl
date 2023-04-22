@@ -4,6 +4,8 @@
 
 using EfficientFrontier, LinearAlgebra
 using TranscodingStreams, CodecXz, Serialization, Downloads
+using LightenQP: LightenQP  #, solveOOQP
+import LightenQP: OOQP, fPortfolio
 
 if length(filter((x) -> x == :uOSQP, names(Main, imported=true))) == 0
     include("./uOSQP.jl")
@@ -13,6 +15,26 @@ end
 if length(filter((x) -> x == :uClarabel, names(Main, imported=true))) == 0
     include("./uClarabel.jl")
     using .uClarabel
+end
+
+function OOQP(P::Problem{T}) where {T}
+    #Pack P into OOQP
+    (; E, V, u, d, G, g, A, b, N, M, J) = P
+    iu = findall(u .< Inf)
+    C = [G; -Matrix{T}(I, N, N); Matrix{T}(I, N, N)[iu, :]]
+    gq = [g; -d; u[iu]]
+    L = J + N + length(iu)
+    OOQP{T}(V, A, C, E, b, gq, N, M, L)
+end
+
+function fPortfolio(P::Problem{T}; settings=LightenQP.Settings{T}(), L=0.0) where {T}
+    Q = OOQP(P)
+    fPortfolio(Q; settings=settings, L=L)
+end
+
+function fPortfolio(P::Problem{T}, mu::T; settings=LightenQP.Settings{T}(), check=true) where {T}
+    Q = OOQP(P)
+    fPortfolio(Q, mu; settings=settings, check=check)
 end
 
 function testData(ds::Symbol)
@@ -268,10 +290,10 @@ nothing
 
 
 #=
-Remark: 
+Remark:
 
 * OSQP is dangerous when mu version is computed, low accuracy, volatile speed (fastest near LMEP, but slowest near HMEP, Highest Mean Efficient Portfolio)
 
-* OSQP is very good, when L is used. Accuracy 1.28e-10 (SP500 and Ungil), very good (deteriorate near LMEP ); speed 0.0751 (Ungil) and 0.0909 (SP500), fastest, no speed down at HMEP; 
+* OSQP is very good, when L is used. Accuracy 1.28e-10 (SP500 and Ungil), very good (deteriorate near LMEP ); speed 0.0751 (Ungil) and 0.0909 (SP500), fastest, no speed down at HMEP;
   objective 7.53e-14 (SP500 and Ungil), very good
 =#
