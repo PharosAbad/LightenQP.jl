@@ -31,13 +31,13 @@ function main()
 
     #v1.0.1
     Q = OOQP(V, E, u)
-    ts = @elapsed xH, statusH = fPortfolio(Q; L=Inf)       #HMFP (Highest Mean Frontier Portfolio)
+    ts = @elapsed xH, statusH = fPortfolio(Q, Inf)       #HMFP (Highest Mean Frontier Portfolio)
     println("HMEP (Highest Mean Efficient Portfolio) --- fPortfolio @ max mu:  ", ts, "  seconds")
-    ts = @elapsed xL, statusL = fPortfolio(Q; L=-Inf)      #LMFP (Lowest Mean Frontier Portfolio)
+    ts = @elapsed xL, statusL = fPortfolio(Q, -Inf)      #LMFP (Lowest Mean Frontier Portfolio)
     println("LMEP (Lowest Mean Efficient Portfolio)  --- fPortfolio @ min mu:  ", ts, "  seconds")
-    ts = @elapsed x0, status0 = fPortfolio(Q; L=0.0)
+    ts = @elapsed x0, status0 = fPortfolio(Q, 0.0)
     println("LMEP (Lowest Mean Efficient Portfolio, also called GMVP, Global Minimum Variance Portfolio) --- fPortfolio @ L=0:  ", ts, "  seconds")
-    ts = @elapsed x2, status2 = fPortfolio(Q; L=2.0)
+    ts = @elapsed x2, status2 = fPortfolio(Q, 2.0)
     println(" --- fPortfolio @ L=2.0:  ", ts, "  seconds")
 end
 

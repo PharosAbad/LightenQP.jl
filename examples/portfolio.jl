@@ -25,7 +25,8 @@ function main()
 
      #v1.0.1
      O = OOQP(V, E, u)
-     y, statusy = fPortfolio(O; L=1.0)
+     #y, statusy = fPortfolio(O; L=1.0)
+     y, statusy = fPortfolio(O, 1.0)
      display(norm(x.x - y.x, Inf))  #0
 end
 
@@ -38,7 +39,7 @@ aCL = EfficientFrontier.ECL(P; numSettings=nS)
 aEF = eFrontier(aCL, P)
 
 mu = x.x'*E
-z = ePortfolio(aEF, mu)
+z = ePortfolio(mu, aEF)
 x.x - z
 =#
 

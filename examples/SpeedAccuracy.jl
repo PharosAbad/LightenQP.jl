@@ -6,6 +6,7 @@ using EfficientFrontier, LinearAlgebra
 using TranscodingStreams, CodecXz, Serialization, Downloads
 using LightenQP: LightenQP  #, solveOOQP
 import LightenQP: OOQP, fPortfolio
+using Statistics
 
 if length(filter((x) -> x == :uOSQP, names(Main, imported=true))) == 0
     include("./uOSQP.jl")
@@ -27,15 +28,17 @@ function OOQP(P::Problem{T}) where {T}
     OOQP{T}(V, A, C, E, b, gq, N, M, L)
 end
 
-function fPortfolio(P::Problem{T}; settings=LightenQP.Settings{T}(), L=0.0) where {T}
+#=
+function fPortfolio(P::Problem{T}, L::T=0.0; settings=LightenQP.Settings{T}()) where {T}
     Q = OOQP(P)
-    fPortfolio(Q; settings=settings, L=L)
+    fPortfolio(Q, L; settings=settings)
 end
 
-function fPortfolio(P::Problem{T}, mu::T; settings=LightenQP.Settings{T}(), check=true) where {T}
+function fPortfolio(mu::T, P::Problem{T}; settings=LightenQP.Settings{T}(), check=true) where {T}
     Q = OOQP(P)
-    fPortfolio(Q, mu; settings=settings, check=check)
+    fPortfolio(mu, Q; settings=settings, check=check)
 end
+=#
 
 function testData(ds::Symbol)
     if ds == :Ungil
@@ -91,10 +94,10 @@ function SpeedAccuracy(aEF, P, QPsolver, M=16)
     for k in 1:N
         for m = 1:M
             mu = ((M + 1 - m) * aEF.mu[k] + (m - 1) * aEF.mu[k+1]) / M
-            z = ePortfolio(aEF, mu)
+            z = ePortfolio(mu, aEF)
             if QPsolver == :LightenQP
-                #ts = @elapsed y, status = fPortfolio(P, mu; check=false)
-                ts = @elapsed y, status = fPortfolio(P, mu; check=check)
+                #ts = @elapsed y, status = fPortfolio(mu, P; check=check)
+                ts = @elapsed y, status = fPortfolio(mu, OOQP(P); check=check)
                 check = false
                 st = status > 0
             elseif QPsolver == :OSQP
@@ -149,6 +152,8 @@ function cmpSA(ds::Symbol)
         println("")
         #Accuracy
         println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Al[:], 0.99), quantile(Ao[:], 0.99), quantile(Ac[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Al[:]), median(Ao[:]), median(Ac[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Al, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(Ao, sigdigits=3))
@@ -157,6 +162,8 @@ function cmpSA(ds::Symbol)
         println("")
         #Speed
         println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Tl[:], 0.99), quantile(To[:], 0.99), quantile(Tc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Tl[:]), median(To[:]), median(Tc[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Tl, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(To, sigdigits=3))
@@ -165,6 +172,8 @@ function cmpSA(ds::Symbol)
         println("")
         #Objective function
         println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Ol[:], 0.99), quantile(Oo[:], 0.99), quantile(Oc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Ol[:]), median(Oo[:]), median(Oc[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Ol, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(Oo, sigdigits=3))
@@ -190,11 +199,9 @@ function SpeedAccuracyL(aEF, P, aCL, QPsolver, M=16)
         for m = 1:M
             #mu = ((M + 1 - m) * aEF.mu[k] + (m - 1) * aEF.mu[k+1]) / M
             L = ((M + 1 - m) * t.L1 + (m - 1) * t.L0) / M
-            #z = ePortfolio(aEF, mu)
-            z = ePortfolio(aCL, P, L)
+            z = ePortfolio(P, L, aCL)
             if QPsolver == :LightenQP
-                #ts = @elapsed y, status = fPortfolio(P, mu; check=false)
-                ts = @elapsed y, status = fPortfolio(OOQP(P); L)    #fPortfolio(P; L) use active-set numerical solver
+                ts = @elapsed y, status = fPortfolio(OOQP(P), L)    #fPortfolio(P; L) use active-set numerical solver
                 st = status > 0
             elseif QPsolver == :OSQP
                 #ts = @elapsed y = OpSpQP(P, mu)
@@ -250,6 +257,8 @@ function cmpSA_L(ds::Symbol)
         println("")
         #Accuracy
         println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Al[:], 0.99), quantile(Ao[:], 0.99), quantile(Ac[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Al[:]), median(Ao[:]), median(Ac[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Al, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(Ao, sigdigits=3))
@@ -258,6 +267,8 @@ function cmpSA_L(ds::Symbol)
         println("")
         #Speed
         println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Tl[:], 0.99), quantile(To[:], 0.99), quantile(Tc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Tl[:]), median(To[:]), median(Tc[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Tl, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(To, sigdigits=3))
@@ -266,6 +277,8 @@ function cmpSA_L(ds::Symbol)
         println("")
         #Objective function
         println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Ol[:], 0.99), quantile(Oo[:], 0.99), quantile(Oc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Ol[:]), median(Oo[:]), median(Oc[:])], sigdigits=3))
         show(stdout, "text/plain", round.(Ol, sigdigits=3))
         println("")
         show(stdout, "text/plain", round.(Oo, sigdigits=3))

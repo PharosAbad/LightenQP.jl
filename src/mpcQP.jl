@@ -188,8 +188,8 @@ end
 
 """
 
-        x, status = fPortfolio(O::OOQP; settings, L::T=0.0)
-        x, status = fPortfolio(O::OOQP, mu; settings, check=true)
+        x, status = fPortfolio(O::OOQP, L::T=0.0; settings)
+        x, status = fPortfolio(mu, O::OOQP; settings, check=true)
 
 find the minimum variance portfolio: See [`Portfolio Selection · LightenQP`](https://github.com/PharosAbad/LightenQP.jl/wiki/User-Guides#portfolio-selection-1)
 
@@ -204,14 +204,14 @@ if `check=false`, we do not check if mu is feasible or not (between lowest and h
 
 See also [`OOQP`](@ref), [`solveOOQP`](@ref), [`Solution`](@ref), [`Settings`](@ref)
 """
-function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where {T}
+function fPortfolio(mu::T, O::OOQP{T}; settings=Settings{T}(), check=true) where {T}
     #FP(mu=mu)
     (; V, A, C, q, b, g, N, M, L) = O
     #tol = settings.tol
     mu1 = mu
     if check
         #make sure mu is feasible, otherwise, change mu to be the highest or lowest
-        #HMFP (Highest Mean Frontier Portfolio)        
+        #HMFP (Highest Mean Frontier Portfolio)
         xH, status = mpcLP(q, A, b, C, g; settings=settings, min=false)  #find the Highest mu
         if status == 0
             error("mu for Highest Mean Frontier Portfolio: infeasible")
@@ -251,7 +251,7 @@ function fPortfolio(O::OOQP{T}, mu::T; settings=Settings{T}(), check=true) where
 end
 
 
-function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
+function fPortfolio(O::OOQP{T}, L::T=0.0; settings=Settings{T}()) where {T}
     #FP(L=L)
     (; V, A, C, q, b, g, N, M) = O
     if isfinite(L)  #@ given L
@@ -263,7 +263,7 @@ function fPortfolio(O::OOQP{T}; settings=Settings{T}(), L::T=0.0) where {T}
         Q = OOQP{T}(V, A, C, qq, b, g, N, M, O.L)
         return solveOOQP(Q; settings=settings)
     end
-    
+
     #L == ±Inf, using LP to find HMEP LMEP
     min = L == Inf ? false : true
     x, status = mpcLP(q, A, b, C, g; settings=settings, min=min)
