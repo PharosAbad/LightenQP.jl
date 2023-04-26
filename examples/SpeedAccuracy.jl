@@ -82,6 +82,51 @@ function testData(ds::Symbol)
     return P
 end
 
+function saveText(fn, Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc)
+    redirect_stdio(stdout=fn) do
+        #status
+        println("\n------- Solution status ------- SSQP/OSQP/Clarabel")
+        show(stdout, "text/plain", Sl)
+        println("")
+        show(stdout, "text/plain", So)
+        println("")
+        show(stdout, "text/plain", Sc)
+        println("")
+        #Accuracy
+        println("\n------- Accuracy -------SSQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Al[:], 0.99), quantile(Ao[:], 0.99), quantile(Ac[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Al[:]), median(Ao[:]), median(Ac[:])], sigdigits=3))
+        println("---- quantile  1% ----   ", round.([quantile(Al[:], 0.01), quantile(Ao[:], 0.01), quantile(Ac[:], 0.01)], sigdigits=3))
+        show(stdout, "text/plain", round.(Al, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ao, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Ac, sigdigits=3))
+        println("")
+        #Speed
+        println("\n--- Speed (time span, smaller for faster speed) ---SSQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Tl[:], 0.99), quantile(To[:], 0.99), quantile(Tc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Tl[:]), median(To[:]), median(Tc[:])], sigdigits=3))
+        println("---- quantile  1% ----   ", round.([quantile(Tl[:], 0.01), quantile(To[:], 0.01), quantile(Tc[:], 0.01)], sigdigits=3))
+        show(stdout, "text/plain", round.(Tl, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(To, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Tc, sigdigits=3))
+        println("")
+        #Objective function
+        println("\n--- Objective function value (diff in sd, not variance) ---SSQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
+        println("---- quantile 99% ----   ", round.([quantile(Ol[:], 0.99), quantile(Oo[:], 0.99), quantile(Oc[:], 0.99)], sigdigits=3))
+        println("------- median -------   ", round.([median(Ol[:]), median(Oo[:]), median(Oc[:])], sigdigits=3))
+        println("---- quantile  1% ----   ", round.([quantile(Ol[:], 0.01), quantile(Oo[:], 0.01), quantile(Oc[:], 0.01)], sigdigits=3))
+        show(stdout, "text/plain", round.(Ol, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oo, sigdigits=3))
+        println("")
+        show(stdout, "text/plain", round.(Oc, sigdigits=3))
+        println("")
+    end
+end
 
 function SpeedAccuracy(aEF, P, QPsolver, M=16)
     V = P.V
@@ -141,48 +186,7 @@ function cmpSA(ds::Symbol)
     QPsolver = :Clarabel
     Tc, Ac, Oc, Sc = SpeedAccuracy(aEF, P, QPsolver)
 
-    redirect_stdio(stdout="stdout.txt") do
-        #status
-        println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
-        show(stdout, "text/plain", Sl)
-        println("")
-        show(stdout, "text/plain", So)
-        println("")
-        show(stdout, "text/plain", Sc)
-        println("")
-        #Accuracy
-        println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Al[:], 0.99), quantile(Ao[:], 0.99), quantile(Ac[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Al[:]), median(Ao[:]), median(Ac[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Al, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Ao, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Ac, sigdigits=3))
-        println("")
-        #Speed
-        println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Tl[:], 0.99), quantile(To[:], 0.99), quantile(Tc[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Tl[:]), median(To[:]), median(Tc[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Tl, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(To, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Tc, sigdigits=3))
-        println("")
-        #Objective function
-        println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Ol[:], 0.99), quantile(Oo[:], 0.99), quantile(Oc[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Ol[:]), median(Oo[:]), median(Oc[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Ol, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Oo, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Oc, sigdigits=3))
-        println("")
-    end
-    #redirect_stdio()
-    #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
+    saveText("stdout.txt", Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc)
     return nothing
 end
 
@@ -244,48 +248,7 @@ function cmpSA_L(ds::Symbol)
     QPsolver = :Clarabel
     Tc, Ac, Oc, Sc = SpeedAccuracyL(aEF, P, aCL, QPsolver)
 
-    redirect_stdio(stdout="stdoutL.txt") do
-        #status
-        println("\n------- Solution status ------- LightenQP/OSQP/Clarabel")
-        show(stdout, "text/plain", Sl)
-        println("")
-        show(stdout, "text/plain", So)
-        println("")
-        show(stdout, "text/plain", Sc)
-        println("")
-        #Accuracy
-        println("\n------- Accuracy -------LightenQP/OSQP/Clarabel   ", round.([norm(Al, Inf), norm(Ao, Inf), norm(Ac, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Al[:], 0.99), quantile(Ao[:], 0.99), quantile(Ac[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Al[:]), median(Ao[:]), median(Ac[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Al, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Ao, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Ac, sigdigits=3))
-        println("")
-        #Speed
-        println("\n--- Speed (time span, smaller for faster speed) ---LightenQP/OSQP/Clarabel   ", round.([norm(Tl, Inf), norm(To, Inf), norm(Tc, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Tl[:], 0.99), quantile(To[:], 0.99), quantile(Tc[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Tl[:]), median(To[:]), median(Tc[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Tl, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(To, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Tc, sigdigits=3))
-        println("")
-        #Objective function
-        println("\n--- Objective function value (diff in sd, not variance) ---LightenQP/OSQP/Clarabel   ", round.([norm(Ol, Inf), norm(Oo, Inf), norm(Oc, Inf)], sigdigits=3))
-        println("---- quantile 99% ----   ", round.([quantile(Ol[:], 0.99), quantile(Oo[:], 0.99), quantile(Oc[:], 0.99)], sigdigits=3))
-        println("------- median -------   ", round.([median(Ol[:]), median(Oo[:]), median(Oc[:])], sigdigits=3))
-        show(stdout, "text/plain", round.(Ol, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Oo, sigdigits=3))
-        println("")
-        show(stdout, "text/plain", round.(Oc, sigdigits=3))
-        println("")
-    end
-    #redirect_stdio()
-    #return Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc
+    saveText("stdoutL.txt", Sl, So, Sc, Al, Ao, Ac, Tl, To, Tc, Ol, Oo, Oc)
     return nothing
 end
 
