@@ -101,10 +101,10 @@ function SpeedAccuracy(aEF, P, QPsolver, M=16)
                 check = false
                 st = status > 0
             elseif QPsolver == :OSQP
-                ts = @elapsed y = OpSpQP(P, mu)
+                ts = @elapsed y = OpSpQP(mu, P)
                 st = y.info.status_val == 1
             elseif QPsolver == :Clarabel
-                ts = @elapsed y = ClarabelQP(P, mu)
+                ts = @elapsed y = ClarabelQP(mu, P)
                 st = Int(y.status) == 1
             else
                 error("Unknown QP solver")
@@ -204,12 +204,10 @@ function SpeedAccuracyL(aEF, P, aCL, QPsolver, M=16)
                 ts = @elapsed y, status = fPortfolio(OOQP(P), L)    #fPortfolio(P; L) use active-set numerical solver
                 st = status > 0
             elseif QPsolver == :OSQP
-                #ts = @elapsed y = OpSpQP(P, mu)
-                ts = @elapsed y = OpSpQP(P; L)
+                ts = @elapsed y = OpSpQP(P, L)
                 st = y.info.status_val == 1
             elseif QPsolver == :Clarabel
-                #ts = @elapsed y = ClarabelQP(P, mu)
-                ts = @elapsed y = ClarabelQP(P; L)
+                ts = @elapsed y = ClarabelQP(P, L)
                 st = Int(y.status) == 1
             else
                 error("Unknown QP solver")
