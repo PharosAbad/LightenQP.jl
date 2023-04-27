@@ -40,7 +40,7 @@ function fPortfolio(mu::T, P::Problem{T}; settings=LightenQP.Settings{T}(), chec
 end
 =#
 
-function testData(ds::Symbol)
+function testData(ds::Symbol, pd=true)
     if ds == :Ungil
         E, V = EfficientFrontier.EVdata(:Ungil, false)
         A = [1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
@@ -55,7 +55,7 @@ function testData(ds::Symbol)
 
         P = Problem(E, V, u, d, G, g, A, b)
     elseif ds == :SP500
-        xzFile = joinpath(tempdir(),"sp500.jls.xz") #xzFile = "/tmp/sp500.jls.xz"
+        xzFile = joinpath(tempdir(), "sp500.jls.xz") #xzFile = "/tmp/sp500.jls.xz"
         if !isfile(xzFile)
             Downloads.download("https://github.com/PharosAbad/PharosAbad.github.io/raw/master/files/sp500.jls.xz", xzFile)
         end
@@ -67,7 +67,7 @@ function testData(ds::Symbol)
         N = length(E)
         u = fill(3 / 32, N)
 
-        pd = true
+        #pd = true
         if pd
             N = 263
             ip = 1:N
@@ -165,8 +165,8 @@ function SpeedAccuracy(aEF, P, QPsolver, M=16)
 end
 
 
-function cmpSA(ds::Symbol)
-    P = testData(ds)
+function cmpSA(ds::Symbol, pd=true)
+    P = testData(ds, pd)
     println("--- Starting EfficientFrontier ---")
     t0 = time()
     ts = @elapsed aCL = EfficientFrontier.ECL(P)
@@ -227,8 +227,8 @@ function SpeedAccuracyL(aEF, P, aCL, QPsolver, M=16)
 end
 
 
-function cmpSA_L(ds::Symbol)
-    P = testData(ds)
+function cmpSA_L(ds::Symbol, pd=true)
+    P = testData(ds, pd)
     println("--- Starting EfficientFrontier ---")
     t0 = time()
     ts = @elapsed aCL = EfficientFrontier.ECL(P)
@@ -252,13 +252,26 @@ function cmpSA_L(ds::Symbol)
     return nothing
 end
 
-#FP(mu=mu0), Az=b contains z′E=μ, objective function L=0
-#cmpSA(:Ungil)
-cmpSA(:SP500)
+function cmpSnA(ds::Symbol, pd=true)
+    #FP(mu=mu0), Az=b contains z′E=μ, objective function L=0
+    #cmpSA(:Ungil)
+    cmpSA(ds, pd)
 
-#FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
-#cmpSA_L(:Ungil)
-cmpSA_L(:SP500)
+    #FP(L=L0), , Az=b excludes z′E=μ, objective function has -L*z′E
+    #cmpSA_L(:Ungil)
+    cmpSA_L(ds, pd)
+end
+
+
+function main()
+    cmpSnA(:Ungil)
+    #cmpSnA(:SP500)     #N = 263, a positive-definite part of the full SP500
+    #cmpSnA(:SP500, false)  #N = 476,  the full SP500
+
+    nothing
+end
+
+main()
 
 nothing
 
