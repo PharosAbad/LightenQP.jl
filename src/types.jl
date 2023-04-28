@@ -106,7 +106,7 @@ end
 
 kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloat
 
-    maxIter::Int64      #777
+    maxIter::Int        #777
     scaleStep::T        #0.99   a crude step scaling factor (using Mehrotra's heuristic maybe better)
     tol::T              #2^-26 ≈ 1.5e-8   general (not use in OOQP solver)
     tolMu::T            #2^-52 ≈ 2.2e-16  violation of the complementarity condition
@@ -116,7 +116,7 @@ kwargs are from the fields of Settings{T<:AbstractFloat} for Float64 and BigFloa
 see [`ooqp-userguide.pdf`](http://www.cs.wisc.edu/~swright/ooqp/ooqp-userguide.pdf) or [`Working with the QP Solver`](https://github.com/emgertz/OOQP/blob/master/doc-src/ooqp-userguide/ooqp4qpsolver.tex)
 """
 struct Settings{T<:AbstractFloat}
-    maxIter::Int64  #777
+    maxIter::Int  #777
     scaleStep::T    # 0.99
     tol::T          #2^-26
     tolMu::T        #2^-47
